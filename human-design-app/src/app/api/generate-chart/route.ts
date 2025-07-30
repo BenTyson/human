@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { generateHumanDesignChart } from '@/lib/calculations/chart';
 import { BirthInfo } from '@/lib/calculations/types';
+import { getLocationCoordinates } from '@/lib/calculations/ephemeris';
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,16 +16,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Get location coordinates for accurate calculations
+    const coordinates = getLocationCoordinates(birthPlace);
+    
     // Create birth info object
     const birthInfo: BirthInfo = {
       date: birthDate,
       time: birthTime,
       place: birthPlace,
-      // TODO: Add geocoding to get latitude/longitude
-      // For now, using default coordinates
-      latitude: 40.7128,
-      longitude: -74.0060,
-      timezone: 'America/New_York'
+      latitude: coordinates.latitude,
+      longitude: coordinates.longitude,
+      timezone: coordinates.timezone
     };
 
     // Generate the chart

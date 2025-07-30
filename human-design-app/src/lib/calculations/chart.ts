@@ -60,45 +60,54 @@ function calculateCenters(activations: Activation[]): Center[] {
     }
   });
   
+  // Get all activated gates for channel checking
+  const allActivatedGates = new Set(activations.map(a => a.gate));
+  
   // Check which centers are defined
   return Object.entries(centerGates).map(([centerName, gates]) => {
     const gateArray = Array.from(gates);
-    const defined = isCenterDefined(centerName, gateArray);
+    const defined = isCenterDefined(centerName, allActivatedGates);
     
     return {
       name: centerName,
       defined,
       gates: gateArray,
-      definitionSource: defined ? getDefinitionSource(centerName, gateArray) : []
+      definitionSource: defined ? getDefinitionSource(centerName, allActivatedGates) : []
     };
   });
 }
 
-function isCenterDefined(centerName: string, gates: number[]): boolean {
-  // A center is defined if it has at least one complete channel
-  const centerChannels = Object.entries(CHANNELS).filter(([_, channel]) => {
-    const [gate1, gate2] = channel.gates;
-    return GATE_TO_CENTER[gate1] === centerName || GATE_TO_CENTER[gate2] === centerName;
-  });
+function isCenterDefined(centerName: string, allActivatedGates: Set<number>): boolean {
+  // A center is defined if it participates in at least one complete channel
+  // (both gates of the channel are activated, regardless of which centers they belong to)
   
-  return centerChannels.some(([_, channel]) => {
+  return Object.entries(CHANNELS).some(([_, channel]) => {
     const [gate1, gate2] = channel.gates;
-    return gates.includes(gate1) && gates.includes(gate2);
+    const center1 = GATE_TO_CENTER[gate1];
+    const center2 = GATE_TO_CENTER[gate2];
+    
+    // If this channel involves the current center
+    if (center1 === centerName || center2 === centerName) {
+      // Check if both gates of this channel are activated
+      return allActivatedGates.has(gate1) && allActivatedGates.has(gate2);
+    }
+    return false;
   });
 }
 
-function getDefinitionSource(centerName: string, gates: number[]): string[] {
+function getDefinitionSource(centerName: string, allActivatedGates: Set<number>): string[] {
   // Return the channels that define this center
   const sources: string[] = [];
   
   Object.entries(CHANNELS).forEach(([channelKey, channel]) => {
     const [gate1, gate2] = channel.gates;
-    if (gates.includes(gate1) && gates.includes(gate2)) {
-      const center1 = GATE_TO_CENTER[gate1];
-      const center2 = GATE_TO_CENTER[gate2];
-      if (center1 === centerName || center2 === centerName) {
-        sources.push(channel.name);
-      }
+    const center1 = GATE_TO_CENTER[gate1];
+    const center2 = GATE_TO_CENTER[gate2];
+    
+    // If this channel involves this center and both gates are activated
+    if ((center1 === centerName || center2 === centerName) && 
+        allActivatedGates.has(gate1) && allActivatedGates.has(gate2)) {
+      sources.push(channel.name);
     }
   });
   

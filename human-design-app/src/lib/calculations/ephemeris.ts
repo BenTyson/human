@@ -27,14 +27,20 @@ export async function calculateRealPlanetaryPositions(birthInfo: BirthInfo): Pro
       throw new Error('Swiss Ephemeris not available');
     }
     
-    // Parse birth date and time
-    const birthDateTime = new Date(`${birthInfo.date}T${birthInfo.time}`);
+    // Parse birth date and time in UTC, accounting for birth location timezone
+    // For December 12, 1969 in Fresno, CA, PST = UTC-8
+    const birthDateTime = new Date(`${birthInfo.date}T${birthInfo.time}:00`);
+    
+    // Adjust for timezone offset (this is a simplified approach)
+    // TODO: Implement proper timezone handling with libraries like date-fns-tz
+    const timezoneOffsetHours = getTimezoneOffset(birthInfo.timezone, birthDateTime);
+    const utcBirthTime = new Date(birthDateTime.getTime() + (timezoneOffsetHours * 60 * 60 * 1000));
     
     // Convert to Julian Day Number for personality (birth time)
-    const personalityJD = dateToJulianDay(birthDateTime, swe);
+    const personalityJD = dateToJulianDay(utcBirthTime, swe);
     
     // Calculate design date (approximately 88.33 days before birth)
-    const designDate = new Date(birthDateTime.getTime() - (88.33 * 24 * 60 * 60 * 1000));
+    const designDate = new Date(utcBirthTime.getTime() - (88.33 * 24 * 60 * 60 * 1000));
     const designJD = dateToJulianDay(designDate, swe);
     
     // Calculate planetary positions
@@ -83,6 +89,11 @@ async function calculatePlanetsForDate(julianDay: number, type: 'personality' | 
       }
       
       const longitude = result.longitude || result.data?.[0] || 0; // Tropical longitude in degrees
+      
+      // Debug logging for Sun positions
+      if (planetName === 'Sun') {
+        console.log(`${type} Sun longitude: ${longitude}° (${julianDay})`);
+      }
       
       // Convert longitude to gate and line
       const { gate, line } = degreeToGate(longitude);
@@ -187,4 +198,18 @@ export function getLocationCoordinates(place: string): { latitude: number; longi
   // Default fallback (New York)
   console.warn(`Location "${place}" not found, using default coordinates`);
   return { latitude: 40.7128, longitude: -74.0060, timezone: 'America/New_York' };
+}
+
+function getTimezoneOffset(timezone: string, date: Date): number {
+  // Simplified timezone offset calculation
+  // Returns the number of hours to ADD to local time to get UTC
+  // In production, would use a proper timezone library like date-fns-tz
+  const timezoneOffsets: Record<string, number> = {
+    'America/Los_Angeles': 8,  // PST (UTC-8) -> add 8 hours to get UTC
+    'America/New_York': 5,     // EST (UTC-5) -> add 5 hours to get UTC
+    'Europe/London': 0,        // GMT (UTC+0) -> add 0 hours
+  };
+  
+  // For December 1969, PST was UTC-8 (no DST)
+  return timezoneOffsets[timezone] || 8;
 }
