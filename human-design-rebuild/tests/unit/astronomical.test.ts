@@ -67,13 +67,13 @@ describe('Astronomical Calculations', () => {
     it('should convert Dave birth time to correct Julian Day', () => {
       const jd = birthDataToJulianDay(TEST_SUBJECTS.dave.birth);
       // Dave's birth in UTC: Dec 13, 1969 @ 06:12
-      expect(jd).toBeCloseTo(2440565.758, 3);
+      expect(jd).toBeCloseTo(2440568.758, 3);
     });
 
     it('should convert Ben birth time to correct Julian Day', () => {
       const jd = birthDataToJulianDay(TEST_SUBJECTS.ben.birth);
       // Ben's birth in UTC: Nov 17, 1986 @ 17:19
-      expect(jd).toBeCloseTo(2446752.221, 3);
+      expect(jd).toBeCloseTo(2446752.222, 3);
     });
 
     it('should convert Elodi birth time to correct Julian Day', () => {

@@ -104,10 +104,11 @@ export function calculatePlanetPosition(
     julianDay,
     planet,
     HD_EPHEMERIS_FLAGS
-  );
+  ) as any;
 
-  if (result.error) {
-    throw new Error(`Swiss Ephemeris calculation error: ${result.error}`);
+  // Check for calculation errors via rflag
+  if (result.rflag < 0) {
+    throw new Error(`Swiss Ephemeris calculation error: rflag = ${result.rflag}`);
   }
 
   const planetName = Object.entries(PLANETS).find(([_, val]) => val === planet)?.[0] || 'UNKNOWN';
@@ -174,8 +175,7 @@ export function calculateAllPlanets(julianDay: number): PlanetaryPosition[] {
  */
 export function findSunAtLongitude(
   targetLongitude: number,
-  startJulianDay: number,
-  searchBackward: boolean = true
+  startJulianDay: number
 ): number {
   const TOLERANCE = 0.00001; // About 0.036 arc seconds
   const MAX_ITERATIONS = 50;
@@ -227,5 +227,5 @@ export function calculateDesignDate(birthJulianDay: number): number {
   // Start search ~88 days before (rough estimate)
   const searchStart = birthJulianDay - 88;
   
-  return findSunAtLongitude(targetLongitude, searchStart, true);
+  return findSunAtLongitude(targetLongitude, searchStart);
 }
