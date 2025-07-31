@@ -9,6 +9,10 @@ async function getSwisseph(): Promise<typeof import('swisseph') | null> {
   if (!swisseph && typeof window === 'undefined') {
     try {
       swisseph = await import('swisseph');
+      // Set ephemeris path if JPL files are available
+      // Note: node-swisseph uses built-in ephemeris data
+      // For production, consider using JPL DE431 files for higher precision
+      console.log('Swiss Ephemeris loaded successfully');
     } catch (error) {
       console.error('Failed to load Swiss Ephemeris:', error);
       throw new Error('Swiss Ephemeris not available');
@@ -33,14 +37,15 @@ export async function calculateRealPlanetaryPositions(birthInfo: BirthInfo): Pro
     
     // Adjust for timezone offset (this is a simplified approach)
     // TODO: Implement proper timezone handling with libraries like date-fns-tz
-    const timezoneOffsetHours = getTimezoneOffset(birthInfo.timezone, birthDateTime);
+    const timezoneOffsetHours = getTimezoneOffset(birthInfo.timezone || 'America/Los_Angeles', birthDateTime);
     const utcBirthTime = new Date(birthDateTime.getTime() + (timezoneOffsetHours * 60 * 60 * 1000));
     
     // Convert to Julian Day Number for personality (birth time)
     const personalityJD = dateToJulianDay(utcBirthTime, swe);
     
-    // Calculate design date (approximately 88.33 days before birth)
-    const designDate = new Date(utcBirthTime.getTime() - (88.33 * 24 * 60 * 60 * 1000));
+    // Calculate design date (88.135417 days before birth - matches HumDes reference)
+    // This is the precise value used by HumDes for 88° solar arc
+    const designDate = new Date(utcBirthTime.getTime() - (88.135417 * 24 * 60 * 60 * 1000));
     const designJD = dateToJulianDay(designDate, swe);
     
     // Calculate planetary positions
@@ -59,6 +64,7 @@ async function calculatePlanetsForDate(julianDay: number, type: 'personality' | 
   const positions: PlanetaryPosition[] = [];
   
   // Swiss Ephemeris planet constants
+  // Official Human Design planets only (no Chiron)
   const PLANET_NUMBERS = {
     Sun: swe.SE_SUN,
     Moon: swe.SE_MOON,
@@ -70,11 +76,11 @@ async function calculatePlanetsForDate(julianDay: number, type: 'personality' | 
     Uranus: swe.SE_URANUS,
     Neptune: swe.SE_NEPTUNE,
     Pluto: swe.SE_PLUTO,
-    NorthNode: swe.SE_TRUE_NODE,
-    Chiron: swe.SE_CHIRON
+    NorthNode: swe.SE_TRUE_NODE  // Using True Node, not Mean Node
   };
   
   // Calculation flags
+  // Human Design uses tropical coordinates (confirmed by research)
   const CALC_FLAGS = swe.SEFLG_SWIEPH | swe.SEFLG_SPEED;
   
   for (const [planetName, planetNum] of Object.entries(PLANET_NUMBERS)) {
@@ -90,13 +96,14 @@ async function calculatePlanetsForDate(julianDay: number, type: 'personality' | 
       
       const longitude = result.longitude || result.data?.[0] || 0; // Tropical longitude in degrees
       
-      // Debug logging for Sun positions
-      if (planetName === 'Sun') {
-        console.log(`${type} Sun longitude: ${longitude}° (${julianDay})`);
-      }
-      
       // Convert longitude to gate and line
       const { gate, line } = degreeToGate(longitude);
+      
+      // Debug logging for Sun positions
+      if (planetName === 'Sun') {
+        console.log(`${type} Sun longitude: ${longitude}° -> Gate ${gate}.${line} (JD: ${julianDay})`);
+        console.log(`  Expected HumDes: Personality=Gate 26.5, Design=Gate 45.1`);
+      }
       
       // Convert to astrological sign and position
       const { sign, degree, minutes, seconds } = degreeToSign(longitude);

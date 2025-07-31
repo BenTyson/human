@@ -89,11 +89,11 @@ export const CHANNELS: Record<string, { name: string; gates: [number, number] }>
   '47-64': { name: 'Abstraction', gates: [47, 64] }
 };
 
-// Planets for calculations
+// Planets for calculations (Official Human Design system)
 export const PLANETS = [
   'Sun', 'Earth', 'Moon', 'Mercury', 'Venus', 'Mars', 
   'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto', 
-  'NorthNode', 'SouthNode', 'Chiron'
+  'NorthNode', 'SouthNode'
 ] as const;
 
 // Astrological signs

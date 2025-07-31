@@ -16,8 +16,7 @@ const planetGlyphs = {
   Saturn: '♄',
   Uranus: '♅',
   Neptune: '♆',
-  Pluto: '♇',
-  Chiron: '⚷',
+  Pluto: '♇'
 };
 
 // Astrological signs

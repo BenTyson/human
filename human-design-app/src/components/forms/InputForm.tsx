@@ -23,6 +23,12 @@ export default function InputForm() {
     formState: { errors },
   } = useForm<FormData>({
     resolver: zodResolver(formSchema),
+    defaultValues: {
+      name: 'Test Subject',
+      birthDate: '1969-12-12',
+      birthTime: '22:12',
+      birthPlace: 'Fresno, CA, USA'
+    }
   });
 
   const onSubmit = async (data: FormData) => {

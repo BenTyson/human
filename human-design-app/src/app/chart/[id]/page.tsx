@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { HumanDesignChart } from '@/lib/calculations/types';
 import PlanetaryPositions from '@/components/charts/PlanetaryPositions';
+import HumDesComparison from '@/components/charts/HumDesComparison';
 
 export default function ChartPage() {
   const params = useParams();
@@ -149,7 +150,17 @@ export default function ChartPage() {
 
             {/* Planetary Positions */}
             <PlanetaryPositions chart={chartData} />
+          </div>
+        </div>
 
+        {/* HumDes Comparison Section - Full Width */}
+        <div className="mt-8">
+          <HumDesComparison chart={chartData} />
+        </div>
+
+        <div className="grid lg:grid-cols-3 gap-8 mt-8">
+          <div className="lg:col-span-2"></div>
+          <div className="space-y-6">
             {/* Export Options */}
             <div className="bg-white rounded-2xl shadow-xl p-6">
               <h3 className="text-xl font-bold text-slate-800 mb-4">Export Options</h3>
