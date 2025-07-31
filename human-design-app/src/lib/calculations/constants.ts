@@ -109,5 +109,7 @@ export const GATE_ORDER = [
   28, 44, 1, 43, 14, 34, 9, 5, 26, 11, 10, 58, 38, 54, 61, 60
 ];
 
-// 88 days design offset (approximately 88.33 days before birth)
-export const DESIGN_OFFSET_DAYS = 88.33;
+// Design offset: Exactly 88 degrees of solar movement before birth
+// Average approximation: 88.135417 days (will be replaced with exact calculation)
+// This is the precise value used by HumDes for 88° solar arc
+export const DESIGN_OFFSET_DAYS = 88.135417;

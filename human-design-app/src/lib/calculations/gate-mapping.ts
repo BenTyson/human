@@ -80,55 +80,38 @@ export const GATE_DEGREE_MAPPING: Record<number, { startDegree: number; endDegre
   60: { startDegree: 354.375, endDegree: 360 }
 };
 
-// Function to get gate from tropical longitude
+// Function to get gate from tropical longitude using the correct HDKit algorithm
 export function degreeToGate(longitude: number): { gate: number; line: number } {
-  // TEMPORARY: Let me create a direct mapping based on the HumDes reference values
-  // to understand the pattern
+  // Normalize longitude to 0-360 range
+  let normalizedLongitude = ((longitude % 360) + 360) % 360;
   
-  // Known reference points from HumDes:
-  // 261.07252662844195° -> Gate 26.5 (Personality Sun)
-  // 173.11282737310466° -> Gate 45.1 (Design Sun)
-  
-  // Direct lookup for debugging
-  if (Math.abs(longitude - 261.07252662844195) < 0.001) {
-    return { gate: 26, line: 5 };
-  }
-  if (Math.abs(longitude - 173.11282737310466) < 0.001) {
-    return { gate: 45, line: 1 };
+  // CRITICAL: Human Design gates start at Gate 41 at 02º00'00" Aquarius
+  // We need to adjust from 00º00'00" Aries. The distance is 58º00'00" exactly.
+  normalizedLongitude += 58;
+  if (normalizedLongitude >= 360) {
+    normalizedLongitude -= 360;
   }
   
-  // For now, use the original gate wheel but we know it's wrong
+  // Verified gate wheel from original HDKit constants
   const GATE_WHEEL = [
-    41, 19, 13, 49, 30, 55, 37, 63, 22, 36, 25, 17, 21, 51, 42, 3,
-    27, 24, 2, 23, 8, 20, 16, 35, 45, 12, 15, 52, 39, 53, 62, 56,
-    31, 33, 7, 4, 29, 59, 40, 64, 47, 6, 46, 18, 48, 57, 32, 50,
+    41, 19, 13, 49, 30, 55, 37, 63, 22, 36, 25, 17, 21, 51, 42, 3, 
+    27, 24, 2, 23, 8, 20, 16, 35, 45, 12, 15, 52, 39, 53, 62, 56, 
+    31, 33, 7, 4, 29, 59, 40, 64, 47, 6, 46, 18, 48, 57, 32, 50, 
     28, 44, 1, 43, 14, 34, 9, 5, 26, 11, 10, 58, 38, 54, 61, 60
   ];
   
-  // Normalize longitude to 0-360 range
-  const normalizedLongitude = ((longitude % 360) + 360) % 360;
+  // Calculate percentage through the 360° wheel
+  const percentageThrough = normalizedLongitude / 360;
   
-  // Each gate covers 5.625 degrees (360° ÷ 64 gates)
-  const gatesDegrees = 5.625;
-  let gateIndex = Math.floor(normalizedLongitude / gatesDegrees);
-  
-  // Handle edge case for index 64
-  if (gateIndex >= 64) {
-    gateIndex = 0;
-  }
-  
+  // Calculate gate using the original HDKit method
+  const gateIndex = Math.floor(percentageThrough * 64);
   const gate = GATE_WHEEL[gateIndex];
   
-  // Calculate line (1-6)
-  // Each line covers 0.9375 degrees (5.625° ÷ 6 lines)
-  const lineDegrees = 0.9375;
-  const positionInGate = normalizedLongitude % gatesDegrees;
-  let line = Math.floor(positionInGate / lineDegrees) + 1;
+  // Calculate line (1-6) - 384 is the total number of lines (64 gates × 6 lines)
+  const exactLine = 384 * percentageThrough;
+  const line = Math.floor((exactLine % 6) + 1);
   
-  // Ensure line is within valid range
-  if (line > 6) {
-    line = 6;
-  }
+  console.log(`GATE MAPPING: ${longitude}° -> +58° = ${normalizedLongitude}° -> ${percentageThrough.toFixed(6)} -> gateIndex ${gateIndex} -> Gate ${gate}.${line}`);
   
   return { gate, line };
 }

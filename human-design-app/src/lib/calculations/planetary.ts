@@ -1,6 +1,7 @@
 // Planetary position calculations using real astronomical data
 import { PlanetaryPosition, BirthInfo, Activation } from './types';
 import { calculateRealPlanetaryPositions, getLocationCoordinates } from './ephemeris';
+import { DESIGN_OFFSET_DAYS } from './constants';
 
 export async function calculatePlanetaryPositions(birthInfo: BirthInfo): Promise<{
   personality: PlanetaryPosition[];
@@ -39,7 +40,7 @@ function calculateMockPositions(birthInfo: BirthInfo): {
   const PLANETS = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto', 'NorthNode', 'Chiron'];
   
   const birthDate = new Date(birthInfo.date + 'T' + birthInfo.time);
-  const designDate = new Date(birthDate.getTime() - (88.33 * 24 * 60 * 60 * 1000));
+  const designDate = new Date(birthDate.getTime() - (DESIGN_OFFSET_DAYS * 24 * 60 * 60 * 1000));
   
   const personality = PLANETS.map((planet, index) => 
     mockPlanetaryPosition(planet, birthDate, index)

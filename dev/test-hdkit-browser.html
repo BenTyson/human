@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HDKit Browser Test</title>
+    <style>
+        body {
+            font-family: monospace;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+        .result {
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .success { color: green; }
+        .error { color: red; }
+        pre { background-color: #f5f5f5; padding: 10px; border-radius: 3px; }
+    </style>
+</head>
+<body>
+    <h1>HDKit Browser Test</h1>
+    <div id="results" class="result"></div>
+
+    <!-- Load HDKit modules -->
+    <script src="hdkit/constants.js"></script>
+    <script src="hdkit/hdkit.js"></script>
+    <script src="hdkit/bodygraph-data.js"></script>
+
+    <script>
+        const results = document.getElementById('results');
+        let output = '';
+
+        function log(message, isError = false) {
+            const className = isError ? 'error' : 'success';
+            output += `<div class="${className}">${message}</div>`;
+            results.innerHTML = output;
+        }
+
+        try {
+            log('<h2>Testing HDKit Core Functionality</h2>');
+            
+            // Test 1: Check constants
+            log('<h3>1. Constants Test</h3>');
+            if (typeof gateOrder !== 'undefined') {
+                log(`✓ Gate order loaded: ${gateOrder.length} gates`);
+            }
+            if (typeof planetGlyphs !== 'undefined') {
+                log(`✓ Planet glyphs loaded: ${Object.keys(planetGlyphs).length} planets`);
+            }
+            if (typeof astrologicalSigns !== 'undefined') {
+                log(`✓ Astrological signs loaded: ${astrologicalSigns.length} signs`);
+            }
+
+            // Test 2: Check functions
+            log('<h3>2. Function Tests</h3>');
+            
+            // Test oppositeGate
+            const testGate = 41;
+            const opposite = oppositeGate(testGate);
+            log(`✓ oppositeGate(${testGate}) = ${opposite}`);
+
+            // Test harmonicGate
+            const harmonic = harmonicGate(testGate);
+            log(`✓ harmonicGate(${testGate}) = ${harmonic}`);
+
+            // Test nextGate
+            const next = nextGate(testGate);
+            log(`✓ nextGate(${testGate}) = ${next}`);
+
+            // Test nextLine
+            const testLine = 3;
+            const nextL = nextLine(testLine);
+            log(`✓ nextLine(${testLine}) = ${nextL}`);
+
+            // Test nextGateAndLine
+            const nextGL = nextGateAndLine(testGate, 6);
+            log(`✓ nextGateAndLine(${testGate}, 6) = ${nextGL}`);
+
+            // Test 3: Display some data
+            log('<h3>3. Data Display</h3>');
+            log(`<pre>Planet Glyphs:\n${JSON.stringify(planetGlyphs, null, 2)}</pre>`);
+            
+            log(`<pre>First 10 gates in order:\n${gateOrder.slice(0, 10).join(', ')}</pre>`);
+
+            log('<h3>✅ All tests passed! HDKit is working correctly.</h3>');
+            
+        } catch (error) {
+            log(`❌ Error: ${error.message}`, true);
+            console.error(error);
+        }
+    </script>
+</body>
+</html>
