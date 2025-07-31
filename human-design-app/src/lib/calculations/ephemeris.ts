@@ -299,7 +299,7 @@ async function calculatePlanetsForDate(julianDay: number, type: 'personality' | 
         continue;  
       }
       
-      const longitude = result.longitude || result.data?.[0];
+      const longitude = result.longitude !== undefined ? result.longitude : result.data?.[0];
       
       if (longitude === undefined || !isFinite(longitude)) {
         errors.push(`${planetName}: Invalid longitude value`);
@@ -421,9 +421,14 @@ export function getLocationCoordinates(place: string): { latitude: number; longi
     'new york, ny': { latitude: 40.7128, longitude: -74.0060, timezone: 'America/New_York' },
     'london': { latitude: 51.5074, longitude: -0.1278, timezone: 'Europe/London' },
     'los angeles, ca': { latitude: 34.0522, longitude: -118.2437, timezone: 'America/Los_Angeles' },
+    'haxtun, co': { latitude: 40.6364, longitude: -102.6188, timezone: 'America/Denver' },
+    'denver, co': { latitude: 39.7392, longitude: -104.9903, timezone: 'America/Denver' },
+    'chicago, il': { latitude: 41.8781, longitude: -87.6298, timezone: 'America/Chicago' },
   };
   
-  const normalizedPlace = place.toLowerCase().trim();
+  const normalizedPlace = place.toLowerCase().trim()
+    .replace(/,\s*usa$/, '') // Remove ", USA" suffix
+    .replace(/,\s*us$/, ''); // Remove ", US" suffix
   
   // Try exact match first
   if (locationMap[normalizedPlace]) {
@@ -437,8 +442,18 @@ export function getLocationCoordinates(place: string): { latitude: number; longi
     }
   }
   
+  // Try state-based fallback for US locations
+  if (normalizedPlace.includes(', co')) {
+    console.warn(`Location "${place}" not found, using Colorado default (Denver)`);
+    return { latitude: 39.7392, longitude: -104.9903, timezone: 'America/Denver' };
+  }
+  if (normalizedPlace.includes(', ca')) {
+    console.warn(`Location "${place}" not found, using California default (Los Angeles)`);
+    return { latitude: 34.0522, longitude: -118.2437, timezone: 'America/Los_Angeles' };
+  }
+  
   // Default fallback (New York)
-  console.warn(`Location "${place}" not found, using default coordinates`);
+  console.warn(`Location "${place}" not found, using default coordinates (New York)`);
   return { latitude: 40.7128, longitude: -74.0060, timezone: 'America/New_York' };
 }
 
