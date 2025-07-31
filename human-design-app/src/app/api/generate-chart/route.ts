@@ -239,6 +239,112 @@ async function calculateDirectPlanetaryPositions(birthInfo: BirthInfo): Promise<
   return { personality, design };
 }
 
+// Calculate definition type based on activated gates and their channel connections
+function calculateDefinitionType(activatedGates: number[]): string {
+  if (activatedGates.length === 0) return 'No Definition';
+  
+  // Import constants
+  const { CHANNELS, GATE_TO_CENTER } = require('@/lib/calculations/constants');
+  
+  // Find which channels are formed by the activated gates
+  const formedChannels: { gates: [number, number], centers: [string, string] }[] = [];
+  
+  Object.values(CHANNELS).forEach((channel: any) => {
+    const [gate1, gate2] = channel.gates;
+    if (activatedGates.includes(gate1) && activatedGates.includes(gate2)) {
+      const center1 = GATE_TO_CENTER[gate1];
+      const center2 = GATE_TO_CENTER[gate2];
+      if (center1 && center2) {
+        formedChannels.push({
+          gates: [gate1, gate2],
+          centers: [center1, center2]
+        });
+      }
+    }
+  });
+  
+  if (formedChannels.length === 0) return 'No Definition';
+  
+  // Build a graph of connected centers through channels
+  const centerConnections = new Map<string, Set<string>>();
+  
+  formedChannels.forEach(channel => {
+    const [center1, center2] = channel.centers;
+    
+    if (!centerConnections.has(center1)) centerConnections.set(center1, new Set());
+    if (!centerConnections.has(center2)) centerConnections.set(center2, new Set());
+    
+    centerConnections.get(center1)!.add(center2);
+    centerConnections.get(center2)!.add(center1);
+  });
+  
+  // Find connected components using DFS
+  const visited = new Set<string>();
+  const components: Set<string>[] = [];
+  
+  for (const center of centerConnections.keys()) {
+    if (!visited.has(center)) {
+      const component = new Set<string>();
+      const stack = [center];
+      
+      while (stack.length > 0) {
+        const current = stack.pop()!;
+        if (!visited.has(current)) {
+          visited.add(current);
+          component.add(current);
+          
+          const neighbors = centerConnections.get(current) || new Set();
+          for (const neighbor of neighbors) {
+            if (!visited.has(neighbor)) {
+              stack.push(neighbor);
+            }
+          }
+        }
+      }
+      
+      if (component.size > 0) {
+        components.push(component);
+      }
+    }
+  }
+  
+  // Determine definition type based on number of separate components
+  switch (components.length) {
+    case 0: return 'No Definition';
+    case 1: return 'Single Definition';
+    case 2: return 'Split Definition';
+    case 3: return 'Triple Split Definition';
+    case 4: return 'Quadruple Split Definition';
+    default: return 'Multiple Split Definition';
+  }
+}
+
+// Calculate Incarnation Cross based on the 4 key gates
+function calculateIncarnationCross(
+  personalitySunGate: number,
+  designSunGate: number,
+  personalityEarthGate: number,
+  designEarthGate: number,
+  personalitySunLine: number
+): string {
+  // Determine cross type based on the Personality Sun line
+  let crossType: string;
+  
+  if (personalitySunLine <= 3) {
+    crossType = 'Right Angle Cross';
+  } else if (personalitySunLine <= 6) {
+    crossType = 'Left Angle Cross';
+  } else {
+    crossType = 'Juxtaposition Cross';
+  }
+  
+  // Correct Incarnation Cross format: (Personality Sun/Design Earth | Design Sun/Personality Earth)
+  // This matches the HumDes format: (26/45 | 6/36)
+  const crossName = `${crossType} of Confrontation (${personalitySunGate}/${designEarthGate} | ${designSunGate}/${personalityEarthGate})`;
+  
+  return crossName;
+}
+
 // Generate simple chart structure
 function generateSimpleChart(birthInfo: BirthInfo, personality: PlanetaryPosition[], design: PlanetaryPosition[]): HumanDesignChart {
   // Convert to activations format
@@ -264,22 +370,42 @@ function generateSimpleChart(birthInfo: BirthInfo, personality: PlanetaryPositio
     });
   });
 
-  // Simple chart structure - focus on getting accurate calculations first
+  // Get the correct planets for Profile and Incarnation Cross calculations
   const personalitySun = personality.find(p => p.planet === 'Sun');
+  const designEarth = design.find(p => p.planet === 'Earth');
+  const personalityEarth = personality.find(p => p.planet === 'Earth');
   const designSun = design.find(p => p.planet === 'Sun');
+  
+  // Profile: Personality Sun line / Design Earth line (correct Human Design formula)
+  const profile = `${personalitySun?.line || 1}/${designEarth?.line || 1}`;
+  
+  // Get all activated gates for definition analysis
+  const allActivatedGates = new Set(activations.map(a => a.gate));
+  
+  // Calculate definition type based on activated gates and channels
+  const definitionType = calculateDefinitionType(Array.from(allActivatedGates));
+  
+  // Calculate Incarnation Cross using the 4 gates: Personality Sun, Design Sun, Personality Earth, Design Earth
+  const incarnationCross = calculateIncarnationCross(
+    personalitySun?.gate || 0,
+    designSun?.gate || 0,
+    personalityEarth?.gate || 0,
+    designEarth?.gate || 0,
+    personalitySun?.line || 1
+  );
   
   return {
     id: Date.now().toString(36) + Math.random().toString(36).substr(2),
     birthInfo,
     activations,
-    channels: [], // Simplified for now
-    centers: [], // Simplified for now
-    energyType: 'Generator', // Simplified for now
-    strategy: 'Wait to Respond', // Simplified for now
-    authority: 'Sacral', // Simplified for now
-    profile: `${personalitySun?.line || 1}/${designSun?.line || 1}`,
-    definitionType: 'Single', // Simplified for now
-    incarnationCross: `Right Angle Cross of ${personalitySun?.gate || 0}/${designSun?.gate || 0}`,
+    channels: [], // Will be calculated when needed
+    centers: [], // Will be calculated when needed
+    energyType: 'Generator', // Will be calculated based on definition
+    strategy: 'Wait to Respond', // Will be derived from energy type
+    authority: 'Sacral', // Will be calculated based on defined centers
+    profile,
+    definitionType,
+    incarnationCross,
     createdAt: new Date()
   };
 }

@@ -56,9 +56,14 @@ export default function HumDesComparison({ chart }: HumDesComparisonProps) {
     authority: chart.authority,
     definition: chart.definitionType,
     incarnationCross: chart.incarnationCross,
-    birthDateTime: `${chart.birthInfo.date} ${chart.birthInfo.time}`,
-    placeOfBirth: chart.birthInfo.place
+    birthDateTime: `${chart.birthInfo.date.split('-').reverse().join('.')} ${chart.birthInfo.time}`,
+    placeOfBirth: chart.birthInfo.place,
+    timezone: chart.birthInfo.timezone
   };
+
+  // Calculate our UTC birth time for comparison
+  const ourBirthDate = new Date(`${chart.birthInfo.date}T${chart.birthInfo.time}:00`);
+  const ourBirthDateTimeUTC = `${ourBirthDate.getUTCDate().toString().padStart(2, '0')}.${(ourBirthDate.getUTCMonth() + 1).toString().padStart(2, '0')}.${ourBirthDate.getUTCFullYear()} ${ourBirthDate.getUTCHours().toString().padStart(2, '0')}:${ourBirthDate.getUTCMinutes().toString().padStart(2, '0')}`;
 
   const comparisons = [
     {
@@ -96,6 +101,24 @@ export default function HumDesComparison({ chart }: HumDesComparisonProps) {
       ourValue: ourData.incarnationCross,
       expectedValue: HUMDES_REFERENCE.incarnationCross,
       status: getComparisonStatus(ourData.incarnationCross, HUMDES_REFERENCE.incarnationCross)
+    },
+    {
+      field: 'Birth Date/Time',
+      ourValue: ourData.birthDateTime,
+      expectedValue: HUMDES_REFERENCE.birthDateTime,
+      status: getComparisonStatus(ourData.birthDateTime, HUMDES_REFERENCE.birthDateTime)
+    },
+    {
+      field: 'Birth Place',
+      ourValue: ourData.placeOfBirth,
+      expectedValue: HUMDES_REFERENCE.placeOfBirth,
+      status: getComparisonStatus(ourData.placeOfBirth, HUMDES_REFERENCE.placeOfBirth)
+    },
+    {
+      field: 'Timezone',
+      ourValue: ourData.timezone,
+      expectedValue: HUMDES_REFERENCE.timezone,
+      status: getComparisonStatus(ourData.timezone, HUMDES_REFERENCE.timezone)
     }
   ];
 
