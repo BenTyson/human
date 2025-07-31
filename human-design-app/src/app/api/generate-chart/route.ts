@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { BirthInfo, PlanetaryPosition, Activation, HumanDesignChart } from '@/lib/calculations/types';
+import { BirthInfo, PlanetaryPosition, Activation, HumanDesignChart, Center, Channel } from '@/lib/calculations/types';
 import { getLocationCoordinates, SwissEphemerisError, SWISS_EPHEMERIS_CONFIG } from '@/lib/calculations/ephemeris';
 import { degreeToGate, degreeToSign } from '@/lib/calculations/gate-mapping';
 import { fromZonedTime } from 'date-fns-tz';
 import { GATE_TO_CENTER, CENTERS, CHANNELS } from '@/lib/calculations/constants';
+import { getIncarnationCrossName } from '@/lib/calculations/incarnation-crosses';
 
 // Direct Swiss Ephemeris integration - no fallbacks, no complexity
 async function calculateDirectPlanetaryPositions(birthInfo: BirthInfo): Promise<{
@@ -85,13 +86,63 @@ async function calculateDirectPlanetaryPositions(birthInfo: BirthInfo): Promise<
   const personalityJD = swisseph.swe_julday(year, month, day, hour, swisseph.SE_GREG_CAL);
   console.log(`📅 Personality Julian Day: ${personalityJD}`);
 
-  // Calculate design date (exactly 88 degrees of solar arc earlier)
-  const designOffsetDays = 88.135417; // Standard Human Design offset
-  const designJD = personalityJD - designOffsetDays;
-  console.log(`📅 Design Julian Day: ${designJD} (${designOffsetDays} days earlier)`);
+  // Set up calculation flags
+  const flags = swisseph.SEFLG_SWIEPH | swisseph.SEFLG_SPEED;
+
+  // Calculate design date using exact 88-degree solar arc
+  let designJD: number;
+  try {
+    // Calculate sun position at birth for exact 88-degree arc
+    const birthSunResult = swisseph.swe_calc_ut(personalityJD, swisseph.SE_SUN, flags);
+    if ('error' in birthSunResult) {
+      throw new Error('Could not calculate birth sun position');
+    }
+    
+    const birthSunLongitude = birthSunResult.longitude;
+    console.log(`☀️ Birth Sun longitude: ${birthSunLongitude.toFixed(6)}°`);
+    
+    // Target sun position: 88 degrees earlier (backward in zodiac)
+    const targetSunLongitude = (birthSunLongitude - 88 + 360) % 360;
+    console.log(`🎯 Target Design Sun longitude: ${targetSunLongitude.toFixed(6)}°`);
+    
+    // Start with approximate position using fixed offset
+    let currentDesignJD = personalityJD - 88.135417;
+    let iterations = 0;
+    const maxIterations = 20;
+    const precisionThreshold = 0.001; // 0.001 degrees precision
+    
+    while (iterations < maxIterations) {
+      const currentSunResult = swisseph.swe_calc_ut(currentDesignJD, swisseph.SE_SUN, flags);
+      if ('error' in currentSunResult) break;
+      
+      const currentSunLongitude = currentSunResult.longitude;
+      let diff = targetSunLongitude - currentSunLongitude;
+      
+      // Handle 360-degree wrap-around
+      if (diff > 180) diff -= 360;
+      if (diff < -180) diff += 360;
+      
+      if (Math.abs(diff) < precisionThreshold) {
+        console.log(`✅ Converged after ${iterations} iterations, diff: ${Math.abs(diff).toFixed(6)}°`);
+        break;
+      }
+      
+      // Adjust Julian Day (sun moves ~1°/day)
+      currentDesignJD += diff / 0.985; // Average daily solar motion
+      iterations++;
+    }
+    
+    designJD = currentDesignJD;
+    console.log(`📅 Design Julian Day: ${designJD} (exact 88° solar arc after ${iterations} iterations)`);
+    
+  } catch (error) {
+    console.warn('88-degree calculation failed, using fixed offset fallback:', error);
+    const designOffsetDays = 88.135417;
+    designJD = personalityJD - designOffsetDays;
+    console.log(`📅 Design Julian Day: ${designJD} (${designOffsetDays} days fallback)`);
+  }
 
   // Calculate planetary positions
-  const flags = swisseph.SEFLG_SWIEPH | swisseph.SEFLG_SPEED;
   const planets = {
     'Sun': swisseph.SE_SUN,
     'Moon': swisseph.SE_MOON,
@@ -239,6 +290,263 @@ async function calculateDirectPlanetaryPositions(birthInfo: BirthInfo): Promise<
   return { personality, design };
 }
 
+// Calculate centers based on activated gates and channels
+function calculateCenters(activations: Activation[]): Center[] {
+  const centerGates: Record<string, Set<number>> = {};
+  
+  // Initialize all centers
+  Object.keys(CENTERS).forEach(centerName => {
+    centerGates[centerName] = new Set();
+  });
+  
+  // Add activated gates to their centers
+  activations.forEach(activation => {
+    const centerName = GATE_TO_CENTER[activation.gate];
+    if (centerName) {
+      centerGates[centerName].add(activation.gate);
+    }
+  });
+  
+  // Get all activated gates for channel checking
+  const allActivatedGates = new Set(activations.map(a => a.gate));
+  
+  // Check which centers are defined
+  return Object.entries(centerGates).map(([centerName, gates]) => {
+    const gateArray = Array.from(gates);
+    const defined = isCenterDefined(centerName, allActivatedGates);
+    
+    return {
+      name: centerName,
+      defined,
+      gates: gateArray,
+      definitionSource: defined ? getDefinitionSource(centerName, allActivatedGates) : []
+    };
+  });
+}
+
+// Check if a center is defined (has at least one complete channel)
+function isCenterDefined(centerName: string, allActivatedGates: Set<number>): boolean {
+  return Object.entries(CHANNELS).some(([_, channel]) => {
+    const [gate1, gate2] = channel.gates;
+    const center1 = GATE_TO_CENTER[gate1];
+    const center2 = GATE_TO_CENTER[gate2];
+    
+    // If this channel involves the current center
+    if (center1 === centerName || center2 === centerName) {
+      // Check if both gates of this channel are activated
+      return allActivatedGates.has(gate1) && allActivatedGates.has(gate2);
+    }
+    return false;
+  });
+}
+
+// Get the channels that define this center
+function getDefinitionSource(centerName: string, allActivatedGates: Set<number>): string[] {
+  const sources: string[] = [];
+  
+  Object.entries(CHANNELS).forEach(([channelKey, channel]) => {
+    const [gate1, gate2] = channel.gates;
+    const center1 = GATE_TO_CENTER[gate1];
+    const center2 = GATE_TO_CENTER[gate2];
+    
+    // If this channel involves this center and both gates are activated
+    if ((center1 === centerName || center2 === centerName) && 
+        allActivatedGates.has(gate1) && allActivatedGates.has(gate2)) {
+      sources.push(channel.name);
+    }
+  });
+  
+  return sources;
+}
+
+// Calculate channels from activations
+function calculateChannels(activations: Activation[]): Channel[] {
+  const activatedGates = new Set(activations.map(a => a.gate));
+  
+  return Object.entries(CHANNELS).map(([key, channelDef]) => {
+    const [gate1, gate2] = channelDef.gates;
+    const defined = activatedGates.has(gate1) && activatedGates.has(gate2);
+    
+    return {
+      gates: channelDef.gates,
+      name: channelDef.name,
+      defined
+    };
+  });
+}
+
+// Calculate energy type based on defined centers
+function calculateEnergyType(centers: Center[]): HumanDesignChart['energyType'] {
+  const definedCenters = centers.filter(c => c.defined).map(c => c.name);
+  
+  const hasSacral = definedCenters.includes('Sacral');
+  const hasThroat = definedCenters.includes('Throat');
+  const hasHeart = definedCenters.includes('Heart');
+  const hasSolarPlexus = definedCenters.includes('Solar Plexus');
+  const hasRoot = definedCenters.includes('Root');
+  
+  // Reflector: No defined centers
+  if (definedCenters.length === 0) {
+    return 'Reflector';
+  }
+  
+  // Need to check for motor to throat connection
+  const hasMotorToThroat = checkMotorToThroat(centers);
+  
+  // Generator types: Sacral defined
+  if (hasSacral) {
+    // Manifesting Generator: Sacral + motor to throat connection
+    if (hasMotorToThroat) {
+      return 'Manifesting Generator';
+    }
+    return 'Generator';
+  }
+  
+  // Manifestor: Motor to throat (without Sacral)
+  if (hasMotorToThroat) {
+    return 'Manifestor';
+  }
+  
+  // Projector: No Sacral, no motor to throat
+  return 'Projector';
+}
+
+// Check if there's a motor to throat connection through defined channels
+function checkMotorToThroat(centers: Center[]): boolean {
+  const definedCenters = centers.filter(c => c.defined).map(c => c.name);
+  
+  // Must have throat defined
+  if (!definedCenters.includes('Throat')) {
+    return false;
+  }
+  
+  // Get all defined channels (from centers' definitionSource)
+  const definedChannels = new Set<string>();
+  centers.forEach(center => {
+    if (center.defined && center.definitionSource) {
+      center.definitionSource.forEach(channel => definedChannels.add(channel));
+    }
+  });
+  
+  // Check for direct motor-to-throat channels
+  
+  // Solar Plexus to Throat
+  if (definedCenters.includes('Solar Plexus')) {
+    if (definedChannels.has('Openness') || definedChannels.has('Transitoriness')) {
+      return true; // Channels 12-22 or 35-36
+    }
+  }
+  
+  // Sacral to Throat
+  if (definedCenters.includes('Sacral')) {
+    if (definedChannels.has('Charisma')) {
+      return true; // Channel 20-34
+    }
+    
+    // Sacral -> G-Center -> Throat paths
+    if (definedCenters.includes('G-Center')) {
+      const sacralToG = definedChannels.has('The Beat') || // 2-14
+                        definedChannels.has('Rhythm') ||   // 5-15
+                        definedChannels.has('Discovery');   // 29-46
+      
+      const gToThroat = definedChannels.has('Inspiration') ||     // 1-8
+                        definedChannels.has('The Alpha') ||       // 7-31
+                        definedChannels.has('Awakening') ||       // 10-20
+                        definedChannels.has('The Prodigal');      // 13-33
+      
+      if (sacralToG && gToThroat) {
+        return true;
+      }
+    }
+    
+    // Sacral -> Spleen -> Throat paths
+    if (definedCenters.includes('Spleen')) {
+      if (definedChannels.has('Preservation')) { // 27-50
+        const spleenToThroat = definedChannels.has('The Wavelength') || // 16-48
+                               definedChannels.has('The Brainwave');     // 20-57
+        if (spleenToThroat) {
+          return true;
+        }
+        
+        // Sacral -> Spleen -> G-Center -> Throat
+        if (definedChannels.has('Perfected Form') && definedCenters.includes('G-Center')) { // 10-57
+          const gToThroat = definedChannels.has('Inspiration') ||   // 1-8
+                            definedChannels.has('The Alpha') ||     // 7-31
+                            definedChannels.has('Awakening') ||     // 10-20
+                            definedChannels.has('The Prodigal');    // 13-33
+          if (gToThroat) {
+            return true;
+          }
+        }
+      }
+    }
+  }
+  
+  // Heart/Ego to Throat
+  if (definedCenters.includes('Heart')) {
+    if (definedChannels.has('The Money Line')) {
+      return true; // Channel 21-45
+    }
+    
+    // Heart -> G-Center -> Throat paths
+    if (definedCenters.includes('G-Center')) {
+      const heartToG = definedChannels.has('Initiation'); // 25-51
+      const gToThroat = definedChannels.has('Inspiration') ||   // 1-8
+                        definedChannels.has('The Alpha') ||     // 7-31
+                        definedChannels.has('Awakening') ||     // 10-20
+                        definedChannels.has('The Prodigal');    // 13-33
+      
+      if (heartToG && gToThroat) {
+        return true;
+      }
+    }
+  }
+  
+  // Root to Throat (only indirect paths through Spleen)
+  if (definedCenters.includes('Root') && definedCenters.includes('Spleen')) {
+    const rootToSpleen = definedChannels.has('Judgment') ||        // 18-58
+                         definedChannels.has('Struggle') ||        // 28-38
+                         definedChannels.has('Transformation');    // 32-54
+    
+    const spleenToThroat = definedChannels.has('The Wavelength') || // 16-48
+                           definedChannels.has('The Brainwave');     // 20-57
+    
+    if (rootToSpleen && spleenToThroat) {
+      return true;
+    }
+  }
+  
+  return false;
+}
+
+// Get strategy based on energy type
+function getStrategy(energyType: HumanDesignChart['energyType']): string {
+  const strategies = {
+    'Generator': 'Wait for an opportunity to respond',
+    'Manifesting Generator': 'Wait for an opportunity to respond',
+    'Manifestor': 'To Inform',
+    'Projector': 'Wait for the Invitation',
+    'Reflector': 'Wait a Lunar Cycle'
+  };
+  
+  return strategies[energyType] || 'Unknown';
+}
+
+// Calculate authority based on defined centers
+function calculateAuthority(centers: Center[]): string {
+  const definedCenters = centers.filter(c => c.defined).map(c => c.name);
+  
+  // Authority hierarchy
+  if (definedCenters.includes('Solar Plexus')) return 'Emotional';
+  if (definedCenters.includes('Sacral')) return 'Sacral';
+  if (definedCenters.includes('Spleen')) return 'Splenic';
+  if (definedCenters.includes('Heart')) return 'Ego Projected';
+  if (definedCenters.includes('G-Center')) return 'Self Projected';
+  if (definedCenters.length === 0) return 'Lunar';
+  
+  return 'Sounding Board';
+}
+
 // Calculate definition type based on activated gates and their channel connections
 function calculateDefinitionType(activatedGates: number[]): string {
   if (activatedGates.length === 0) return 'No Definition';
@@ -325,24 +633,17 @@ function calculateIncarnationCross(
   designSunGate: number,
   personalityEarthGate: number,
   designEarthGate: number,
-  personalitySunLine: number
+  personalitySunLine: number,
+  designSunLine: number
 ): string {
-  // Determine cross type based on the Personality Sun line
-  let crossType: string;
+  // Get the proper cross name from the official Human Design data
+  const baseCrossName = getIncarnationCrossName(personalitySunGate, personalitySunLine, designSunLine);
   
-  if (personalitySunLine <= 3) {
-    crossType = 'Right Angle Cross';
-  } else if (personalitySunLine <= 6) {
-    crossType = 'Left Angle Cross';
-  } else {
-    crossType = 'Juxtaposition Cross';
-  }
-  
-  // Correct Incarnation Cross format: (Personality Sun/Design Earth | Design Sun/Personality Earth)
+  // Append the gate pattern in the correct format: (Personality Sun/Personality Earth | Design Sun/Design Earth)
   // This matches the HumDes format: (26/45 | 6/36)
-  const crossName = `${crossType} of Confrontation (${personalitySunGate}/${designEarthGate} | ${designSunGate}/${personalityEarthGate})`;
+  const fullCrossName = `${baseCrossName} (${personalitySunGate}/${personalityEarthGate} | ${designSunGate}/${designEarthGate})`;
   
-  return crossName;
+  return fullCrossName;
 }
 
 // Generate simple chart structure
@@ -379,6 +680,30 @@ function generateSimpleChart(birthInfo: BirthInfo, personality: PlanetaryPositio
   // Profile: Personality Sun line / Design Earth line (correct Human Design formula)
   const profile = `${personalitySun?.line || 1}/${designEarth?.line || 1}`;
   
+  // Calculate centers and channels from activations
+  const centers = calculateCenters(activations);
+  const channels = calculateChannels(activations);
+  
+  // Debug logging
+  console.log('🔍 DEBUG - Activated Gates:', Array.from(new Set(activations.map(a => a.gate))).sort((a, b) => a - b));
+  console.log('🔍 DEBUG - All Channels Check:');
+  Object.entries(CHANNELS).forEach(([key, channelDef]) => {
+    const [gate1, gate2] = channelDef.gates;
+    const activatedGates = new Set(activations.map(a => a.gate));
+    const hasGate1 = activatedGates.has(gate1);
+    const hasGate2 = activatedGates.has(gate2);
+    if (hasGate1 || hasGate2) {
+      console.log(`    ${channelDef.name} (${gate1}-${gate2}): ${hasGate1 ? '✓' : '✗'}${gate1} ${hasGate2 ? '✓' : '✗'}${gate2} = ${hasGate1 && hasGate2 ? 'DEFINED' : 'incomplete'}`);
+    }
+  });
+  console.log('🔍 DEBUG - Defined Centers:', centers.filter(c => c.defined).map(c => c.name));
+  console.log('🔍 DEBUG - Defined Channels:', channels.filter(c => c.defined).map(c => c.name));
+  
+  // Calculate energy type, strategy, and authority based on real data
+  const energyType = calculateEnergyType(centers);
+  const strategy = getStrategy(energyType);
+  const authority = calculateAuthority(centers);
+  
   // Get all activated gates for definition analysis
   const allActivatedGates = new Set(activations.map(a => a.gate));
   
@@ -391,18 +716,28 @@ function generateSimpleChart(birthInfo: BirthInfo, personality: PlanetaryPositio
     designSun?.gate || 0,
     personalityEarth?.gate || 0,
     designEarth?.gate || 0,
-    personalitySun?.line || 1
+    personalitySun?.line || 1,
+    designSun?.line || 1
   );
+  
+  // Debug logging for results
+  console.log('🎯 DEBUG - Results:');
+  console.log('  Energy Type:', energyType);
+  console.log('  Strategy:', strategy);
+  console.log('  Authority:', authority);
+  console.log('  Profile:', profile);
+  console.log('  Definition:', definitionType);
+  console.log('  Cross:', incarnationCross);
   
   return {
     id: Date.now().toString(36) + Math.random().toString(36).substr(2),
     birthInfo,
     activations,
-    channels: [], // Will be calculated when needed
-    centers: [], // Will be calculated when needed
-    energyType: 'Generator', // Will be calculated based on definition
-    strategy: 'Wait to Respond', // Will be derived from energy type
-    authority: 'Sacral', // Will be calculated based on defined centers
+    channels,
+    centers,
+    energyType,
+    strategy,
+    authority,
     profile,
     definitionType,
     incarnationCross,
