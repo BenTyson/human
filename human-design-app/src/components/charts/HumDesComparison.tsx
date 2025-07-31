@@ -1,23 +1,82 @@
 'use client';
 
 import { HumanDesignChart } from '@/lib/calculations/types';
+import { useState } from 'react';
 
-// Known correct HumDes results for test case
-const HUMDES_REFERENCE = {
-  personalityType: 'Generator',
-  profile: '5/1',
-  profileDescription: 'Heretic / Investigator', 
-  strategy: 'Wait for an opportunity to respond',
-  authority: 'Sacral',
-  definition: 'Split Definition',
-  notSelf: 'Frustration',
-  incarnationCross: 'The Left Angle Cross of Confrontation (26/45 | 6/36)',
-  variables: 'PLR DRL',
-  birthDateTime: '12.12.1969 22:12',
-  birthDateTimeUTC: '13.12.1969 06:12',
-  designDateTime: '16.09.1969 02:57',
-  timezone: 'America/Los_Angeles (-08:00)',
-  placeOfBirth: 'Fresno, California, United States of America'
+// Test case references from HumDes
+const TEST_CASES = {
+  test1: {
+    name: 'Test Subject',
+    birthData: {
+      date: '1969-12-12',
+      time: '22:12',
+      place: 'Fresno, CA, USA'
+    },
+    humdesReference: {
+      personalityType: 'Generator',
+      profile: '5/1',
+      profileDescription: 'Heretic / Investigator', 
+      strategy: 'Wait for an opportunity to respond',
+      authority: 'Sacral',
+      definition: 'Split Definition',
+      notSelf: 'Frustration',
+      incarnationCross: 'The Left Angle Cross of Confrontation (26/45 | 6/36)',
+      variables: 'PLR DRL',
+      birthDateTime: '12.12.1969 22:12',
+      birthDateTimeUTC: '13.12.1969 06:12',
+      designDateTime: '16.09.1969 02:57',
+      timezone: 'America/Los_Angeles (-08:00)',
+      placeOfBirth: 'Fresno, California, United States of America'
+    }
+  },
+  ben: {
+    name: 'Ben',
+    birthData: {
+      date: '1986-11-17',
+      time: '10:19',
+      place: 'Haxtun, Colorado, USA'
+    },
+    humdesReference: {
+      personalityType: 'Manifesting Generator',
+      profile: '1/3',
+      profileDescription: 'Investigator / Martyr',
+      strategy: 'Wait for an opportunity to respond',
+      authority: 'Sacral',
+      definition: 'Single Definition',
+      notSelf: 'Frustration',
+      incarnationCross: 'The Right Angle Cross of Contagion (14/8 | 29/30)',
+      variables: 'PRR DLR',
+      birthDateTime: '17.11.1986 10:19',
+      birthDateTimeUTC: '17.11.1986 17:19',
+      designDateTime: '20.08.1986 09:12',
+      timezone: 'America/Denver (-07:00)',
+      placeOfBirth: 'Haxtun, Colorado, United States of America'
+    }
+  },
+  elodi: {
+    name: 'Elodi',
+    birthData: {
+      date: '2016-07-10',
+      time: '11:00',
+      place: 'Wheat Ridge, Colorado, USA'
+    },
+    humdesReference: {
+      personalityType: 'Generator',
+      profile: '4/1',
+      profileDescription: 'Opportunist / Investigator',
+      strategy: 'Wait for an opportunity to respond',
+      authority: 'Sacral',
+      definition: 'Split Definition',
+      notSelf: 'Frustration',
+      incarnationCross: 'The Juxtaposition Cross of Beginnings (53/54 | 42/32)',
+      variables: 'PRL DRR',
+      birthDateTime: '10.07.2016 11:00',
+      birthDateTimeUTC: '10.07.2016 17:00',
+      designDateTime: '10.04.2016 07:14',
+      timezone: 'America/Denver (-06:00)',
+      placeOfBirth: 'Wheat Ridge, Colorado, United States of America'
+    }
+  }
 };
 
 interface HumDesComparisonProps {
@@ -25,6 +84,24 @@ interface HumDesComparisonProps {
 }
 
 export default function HumDesComparison({ chart }: HumDesComparisonProps) {
+  // Determine which test case matches current chart
+  const getCurrentTestCase = () => {
+    const birthDate = chart.birthInfo.date;
+    const birthTime = chart.birthInfo.time;
+    
+    if (birthDate === '1969-12-12' && birthTime.startsWith('22:12')) {
+      return 'test1';
+    } else if (birthDate === '1986-11-17' && birthTime.startsWith('10:19')) {
+      return 'ben';
+    } else if (birthDate === '2016-07-10' && birthTime.startsWith('11:00')) {
+      return 'elodi';
+    }
+    return 'test1'; // default
+  };
+  
+  const currentTestCase = getCurrentTestCase();
+  const HUMDES_REFERENCE = TEST_CASES[currentTestCase].humdesReference;
+  
   // Helper function to compare values and show status
   const getComparisonStatus = (ourValue: string, expectedValue: string): 'match' | 'different' | 'unknown' => {
     if (!ourValue || ourValue === 'Unknown') return 'unknown';
@@ -127,9 +204,9 @@ export default function HumDesComparison({ chart }: HumDesComparisonProps) {
       <div className="mb-6">
         <h3 className="text-xl font-bold text-slate-800 mb-2">HumDes Reference Comparison</h3>
         <p className="text-sm text-slate-600">
-          Comparing our calculations with known correct HumDes results for test case:
+          Comparing our calculations with known correct HumDes results for:
           <br />
-          <strong>12.12.1969 at 22:12 in Fresno, CA, USA</strong>
+          <strong>{TEST_CASES[currentTestCase].name}: {HUMDES_REFERENCE.birthDateTime} in {HUMDES_REFERENCE.placeOfBirth}</strong>
         </p>
       </div>
 
@@ -211,6 +288,93 @@ export default function HumDesComparison({ chart }: HumDesComparisonProps) {
               </span>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* All Test Cases Overview */}
+      <div className="mt-6 pt-6 border-t border-slate-200">
+        <h4 className="font-semibold text-slate-800 mb-4">All Test Cases Overview</h4>
+        
+        {/* Quick test buttons */}
+        <div className="mb-4 p-3 bg-yellow-50 rounded-lg">
+          <p className="text-sm text-slate-700 mb-2">Generate test charts:</p>
+          <div className="flex flex-wrap gap-2">
+            {Object.entries(TEST_CASES).map(([key, testCase]) => (
+              <button
+                key={key}
+                onClick={() => {
+                  // Create form data for auto-submission
+                  const form = document.createElement('form');
+                  form.method = 'POST';
+                  form.action = '/api/generate-chart';
+                  
+                  const data = {
+                    name: testCase.name,
+                    birthDate: testCase.birthData.date,
+                    birthTime: testCase.birthData.time,
+                    birthPlace: testCase.birthData.place
+                  };
+                  
+                  Object.entries(data).forEach(([name, value]) => {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = name;
+                    input.value = value;
+                    form.appendChild(input);
+                  });
+                  
+                  // Submit via fetch instead
+                  fetch('/api/generate-chart', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                  })
+                  .then(res => res.json())
+                  .then(result => {
+                    if (result.success) {
+                      sessionStorage.setItem(`chart-${result.chartId}`, JSON.stringify(result.chart));
+                      window.location.href = `/chart/${result.chartId}`;
+                    }
+                  });
+                }}
+                className="px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white rounded-md text-sm transition-colors"
+              >
+                Generate {testCase.name}
+              </button>
+            ))}
+          </div>
+        </div>
+        
+        <div className="space-y-4">
+          {Object.entries(TEST_CASES).map(([key, testCase]) => (
+            <div key={key} className={`p-4 rounded-lg border ${key === currentTestCase ? 'border-blue-500 bg-blue-50' : 'border-slate-200 bg-slate-50'}`}>
+              <h5 className="font-medium text-slate-800 mb-2">{testCase.name}</h5>
+              <div className="grid md:grid-cols-2 gap-4 text-sm">
+                <div>
+                  <p className="text-slate-600">
+                    <span className="font-medium">Birth:</span> {testCase.humdesReference.birthDateTime}
+                  </p>
+                  <p className="text-slate-600">
+                    <span className="font-medium">Design:</span> {testCase.humdesReference.designDateTime}
+                  </p>
+                  <p className="text-slate-600">
+                    <span className="font-medium">Location:</span> {testCase.birthData.place}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-slate-600">
+                    <span className="font-medium">Type:</span> {testCase.humdesReference.personalityType}
+                  </p>
+                  <p className="text-slate-600">
+                    <span className="font-medium">Profile:</span> {testCase.humdesReference.profile}
+                  </p>
+                  <p className="text-slate-600 text-xs mt-1">
+                    <span className="font-medium">Cross:</span> {testCase.humdesReference.incarnationCross}
+                  </p>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </div>

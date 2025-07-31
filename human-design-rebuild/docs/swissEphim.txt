@@ -1,0 +1,157 @@
+Swiss Ephemeris Configuration Flags for Human Design Calculators
+Based on the official Swiss Ephemeris documentation, here are the specific configuration flags and settings used by Human Design calculators:
+1. Coordinate System Flags (Tropical vs Sidereal)
+Human Design uses tropical coordinates by default:
+c// Default for Human Design - tropical geocentric coordinates
+iflag = SEFLG_SWIEPH;  // No sidereal flag means tropical
+
+// If sidereal is needed (rare in HD), use:
+iflag = SEFLG_SWIEPH | SEFLG_SIDEREAL;
+swe_set_sid_mode(SE_SIDM_FAGAN_BRADLEY, 0, 0);  // or other ayanamsha
+Key Points:
+
+Human Design uses tropical astrology (seasonal/earth-sun relationship)
+No SEFLG_SIDEREAL flag needed for standard HD calculations
+Tropical zodiac divides sky into equal 30° sections for each sign
+
+2. Precision Settings (Apparent vs Geometric Positions)
+Human Design typically uses apparent positions (default behavior):
+c// Default behavior - apparent positions (light-time corrected)
+iflag = SEFLG_SWIEPH;
+
+// For true geometric positions (not recommended for HD):
+iflag = SEFLG_SWIEPH | SEFLG_TRUEPOS;
+Standard HD Configuration:
+
+Apparent positions: Accounts for light-time travel (where we see planets)
+With aberration: Annual aberration included (default)
+With light deflection: Gravitational deflection by Sun included (default)
+With nutation: True equinox of date (default, not mean equinox)
+
+3. Reference Frame Settings
+Human Design uses equinox of date (default):
+c// Standard HD - equinox of date (default)
+iflag = SEFLG_SWIEPH;
+
+// Alternative reference frames (not standard for HD):
+iflag = SEFLG_SWIEPH | SEFLG_J2000;    // J2000.0 equinox
+iflag = SEFLG_SWIEPH | SEFLG_NONUT;    // Mean equinox of date
+Human Design Standard:
+
+True equinox of date: Includes nutation (Earth's wobble)
+Precession applied: Automatically handled for current date
+NOT J2000: Uses current date's coordinate system
+
+4. Planetary Calculation Methods
+Ephemeris Selection Priority for HD:
+c// Priority order for Human Design calculators:
+#define SEFLG_SWIEPH    2L    // 1st choice: Swiss Ephemeris (default)
+#define SEFLG_JPLEPH    1L    // 2nd choice: JPL ephemeris (higher precision)
+#define SEFLG_MOSEPH    4L    // 3rd choice: Moshier (analytical, less precise)
+Typical HD Implementation:
+c// Try Swiss Ephemeris first, fallback to others if files not found
+iflag = SEFLG_SWIEPH | SEFLG_SPEED;
+
+// If Swiss files not available, automatically falls back to Moshier
+// JPL requires specific setup with swe_set_jpl_file()
+Speed Calculations:
+c// Essential for HD - always include speed flag
+iflag |= SEFLG_SPEED;  // Analytical computation of daily motion
+5. Node Calculation (True vs Mean Nodes)
+Both are used in Human Design with specific applications:
+c// True Nodes (actual lunar orbit crossings) - primary HD usage
+ipl = SE_TRUE_NODE;
+
+// Mean Nodes (mathematical average) - secondary HD usage  
+ipl = SE_MEAN_NODE;
+Human Design Standard:
+
+True Nodes: Used for gate/line calculations (more accurate)
+Mean Nodes: Sometimes used for broader interpretations
+Most HD software defaults to True Nodes
+
+6. Complete Human Design Configuration
+Standard HD Calculator Setup:
+c#include "swephexp.h"
+
+// Initialize Swiss Ephemeris
+swe_set_ephe_path("path/to/ephemeris/files");
+
+// Standard Human Design flags
+int32 iflag = SEFLG_SWIEPH |     // Swiss Ephemeris
+              SEFLG_SPEED;        // Include daily motion
+
+// For birth chart calculation
+double xx[6];  // lon, lat, dist, speed_lon, speed_lat, speed_dist
+char serr[256];
+
+// Calculate planets
+int32 ret = swe_calc_ut(julian_day_ut, planet_num, iflag, xx, serr);
+Advanced HD Configuration (for precise calculations):
+c// High precision HD configuration
+int32 iflag = SEFLG_SWIEPH |     // Swiss Ephemeris  
+              SEFLG_SPEED |       // Daily motion
+              SEFLG_EQUATORIAL;   // RA/Dec if needed for some calculations
+
+// Topocentric calculations (for very precise work)
+swe_set_topo(longitude, latitude, altitude);
+iflag |= SEFLG_TOPOCTR;
+7. Human Design-Specific Recommendations
+Primary Configuration:
+c// Most Human Design software uses this exact configuration:
+iflag = SEFLG_SWIEPH | SEFLG_SPEED;
+
+// Planets calculated:
+SE_SUN, SE_MOON, SE_MERCURY, SE_VENUS, SE_MARS, 
+SE_JUPITER, SE_SATURN, SE_URANUS, SE_NEPTUNE, SE_PLUTO
+
+// Lunar nodes (choose one approach):
+SE_TRUE_NODE    // Recommended for HD
+SE_MEAN_NODE    // Alternative
+
+// Earth position for design calculation:
+SE_EARTH        // For 88-degree design calculation
+Time Handling:
+c// Convert birth time to Julian Day (Universal Time)
+double tjd_ut = swe_julday(year, month, day, hour, SE_GREG_CAL);
+
+// For design calculation (88 degrees of solar arc before birth):
+// This is handled by dedicated HD software, not raw Swiss Ephemeris
+8. Quality Assurance Flags
+Validation Settings:
+c// Check for ephemeris consistency
+if (ret_flag < 0) {
+    // Handle error - ephemeris file issues
+}
+
+if (!(ret_flag & SEFLG_SWIEPH)) {
+    // Warning: Fallback ephemeris used (Moshier)
+    // May indicate missing Swiss Ephemeris files
+}
+9. Not Used in Standard Human Design
+These flags are typically NOT used in standard HD calculations:
+c// Generally NOT used in Human Design:
+SEFLG_HELCTR      // Heliocentric positions
+SEFLG_BARYCTR     // Barycentric positions  
+SEFLG_GEOCTR      // Already default
+SEFLG_TRUEPOS     // True geometric positions
+SEFLG_NOABERR     // Without aberration
+SEFLG_NOGDEFL     // Without gravitational deflection
+SEFLG_ASTROMETRIC // Astrometric positions
+SEFLG_J2000       // J2000 reference frame
+SEFLG_SIDEREAL    // Sidereal coordinates
+SEFLG_RADIANS     // Degree output is standard
+SEFLG_XYZ         // Cartesian coordinates
+Summary for Human Design Developers
+Standard Human Design Swiss Ephemeris Configuration:
+
+Ephemeris: Swiss Ephemeris (SEFLG_SWIEPH) with JPL fallback
+Coordinates: Tropical, geocentric, apparent positions
+Reference: True equinox of date (with nutation)
+Precision: Apparent positions with light-time correction
+Speed: Always include SEFLG_SPEED for daily motion
+Nodes: True Nodes (SE_TRUE_NODE) preferred
+Frame: Equinox of date (not J2000)
+Output: Degrees (not radians), ecliptic longitude/latitude
+
+This configuration ensures consistency with established Human Design calculation standards while maintaining high astronomical accuracy.

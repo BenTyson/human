@@ -144,9 +144,11 @@ export async function calculateRealPlanetaryPositions(birthInfo: BirthInfo): Pro
     let designJD: number;
     try {
       designJD = await calculateExact88DegreeSolarArc(personalityJD, swe);
+      console.log(`Using exact 88° calculation: ${(personalityJD - designJD).toFixed(6)} days offset`);
     } catch (error) {
       console.warn('88-degree calculation failed, using fixed offset fallback');
       designJD = personalityJD - DESIGN_OFFSET_DAYS;
+      console.log(`Using fixed offset fallback: ${DESIGN_OFFSET_DAYS} days`);
     }
     
     // Calculate planetary positions
@@ -191,7 +193,7 @@ function angleDifference(angle1: number, angle2: number): number {
   return diff;
 }
 
-// Calculate exact 88-degree solar arc before birth
+// Calculate exact 88-degree solar arc before birth using binary search
 async function calculateExact88DegreeSolarArc(birthJD: number, swe: typeof import('swisseph')): Promise<number> {
   if (!SWISS_EPHEMERIS_CONFIG.STANDARD_FLAGS || !SWISS_EPHEMERIS_CONFIG.PLANETS.Sun) {
     throw new SwissEphemerisError('Swiss Ephemeris configuration not initialized', 'CONFIG_NOT_INITIALIZED');
@@ -209,51 +211,85 @@ async function calculateExact88DegreeSolarArc(birthJD: number, swe: typeof impor
     
     const birthSunLongitude = birthSunResult.longitude || birthSunResult.data?.[0] || 0;
     
-    // Target sun position: 88 degrees earlier (backward in zodiac)
-    const targetSunLongitude = (birthSunLongitude - 88 + 360) % 360;
+    console.log(`🎯 Calculating exact 88° solar arc using binary search:`);
+    console.log(`   Birth Sun: ${birthSunLongitude.toFixed(6)}°`);
     
-    // Start with approximate position (use fixed offset as starting point)
-    let designJD = birthJD - DESIGN_OFFSET_DAYS;
-    let iterations = 0;
+    // Use binary search approach with reasonable bounds
+    let minJD = birthJD - 95; // Minimum reasonable offset  
+    let maxJD = birthJD - 80; // Maximum reasonable offset
+    let bestJD = birthJD - DESIGN_OFFSET_DAYS;
+    let bestDiff = 999;
+    
     const { MAX_ITERATIONS, SOLAR_ARC_DEGREES: PRECISION_THRESHOLD } = SWISS_EPHEMERIS_CONFIG.PRECISION;
     
-    console.log(`Calculating exact 88° solar arc from birth longitude ${birthSunLongitude.toFixed(6)}° to target ${targetSunLongitude.toFixed(6)}°`);
-    
-    while (iterations < MAX_ITERATIONS) {
-      // Calculate current sun position
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const currentSunResult = swe.swe_calc_ut(designJD, SWISS_EPHEMERIS_CONFIG.PLANETS.Sun, SWISS_EPHEMERIS_CONFIG.STANDARD_FLAGS) as any;
+    for (let iteration = 0; iteration < MAX_ITERATIONS; iteration++) {
+      const testJD = (minJD + maxJD) / 2;
       
-      if ('error' in currentSunResult) {
-        console.warn(`Error in iteration ${iterations}, using approximation`);
+      // Calculate sun position at test date
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const testSunResult = swe.swe_calc_ut(testJD, SWISS_EPHEMERIS_CONFIG.PLANETS.Sun, SWISS_EPHEMERIS_CONFIG.STANDARD_FLAGS) as any;
+      
+      if ('error' in testSunResult) {
+        console.warn(`   Error in iteration ${iteration}, using approximation`);
         break;
       }
       
-      const currentSunLongitude = currentSunResult.longitude || currentSunResult.data?.[0] || 0;
-      const diff = angleDifference(currentSunLongitude, targetSunLongitude);
+      const testSunLongitude = testSunResult.longitude || testSunResult.data?.[0] || 0;
+      
+      // Calculate actual solar arc
+      let actualArc = birthSunLongitude - testSunLongitude;
+      if (actualArc > 180) actualArc -= 360;
+      if (actualArc < -180) actualArc += 360;
+      actualArc = Math.abs(actualArc);
+      
+      const diff = Math.abs(actualArc - 88);
+      
+      console.log(`   Iteration ${iteration}: JD=${testJD.toFixed(3)}, Arc=${actualArc.toFixed(3)}°, Diff=${diff.toFixed(3)}°`);
+      
+      // Track best result
+      if (diff < bestDiff) {
+        bestDiff = diff;
+        bestJD = testJD;
+      }
       
       // Check if we're close enough
-      if (Math.abs(diff) < PRECISION_THRESHOLD) {
-        console.log(`Converged after ${iterations} iterations. Final difference: ${Math.abs(diff).toFixed(6)}°`);
+      if (diff < PRECISION_THRESHOLD) {
+        console.log(`   ✅ Converged after ${iteration} iterations! Final difference: ${diff.toFixed(6)}°`);
+        bestJD = testJD;
         break;
       }
       
-      // Adjust Julian Day based on difference
-      // Average solar movement is about 0.985°/day, but it varies
-      const dailySolarMovement = currentSunResult.speed?.[0] || currentSunResult.data?.[3] || 0.985;
-      const adjustment = diff / Math.abs(dailySolarMovement);
+      // Adjust search bounds
+      if (actualArc < 88) {
+        // Need to go back further in time
+        maxJD = testJD;
+      } else {
+        // Need to go forward in time  
+        minJD = testJD;
+      }
       
-      designJD -= adjustment;
-      iterations++;
+      // If search bounds are too close, we're done
+      if (Math.abs(maxJD - minJD) < 0.01) {
+        console.log(`   ✅ Search bounds converged after ${iteration} iterations`);
+        break;
+      }
     }
     
-    if (iterations >= MAX_ITERATIONS) {
-      console.warn(`Failed to converge after ${MAX_ITERATIONS} iterations, using approximation`);
-      return birthJD - DESIGN_OFFSET_DAYS;
+    const finalOffset = birthJD - bestJD;
+    console.log(`   🎯 Design date calculation complete. Final offset: ${finalOffset.toFixed(6)} days`);
+    
+    // Verify the final calculation
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const verifyResult = swe.swe_calc_ut(bestJD, SWISS_EPHEMERIS_CONFIG.PLANETS.Sun, SWISS_EPHEMERIS_CONFIG.STANDARD_FLAGS) as any;
+    if (!('error' in verifyResult)) {
+      const finalSunLongitude = verifyResult.longitude || verifyResult.data?.[0] || 0;
+      let actualArc = birthSunLongitude - finalSunLongitude;
+      if (actualArc > 180) actualArc -= 360;
+      if (actualArc < -180) actualArc += 360;
+      console.log(`   ✅ Verification: Actual solar arc = ${Math.abs(actualArc).toFixed(3)}° (target: 88°)`);
     }
     
-    console.log(`Design date calculation complete. JD offset: ${(birthJD - designJD).toFixed(6)} days`);
-    return designJD;
+    return bestJD;
     
   } catch (error) {
     console.error('Error in exact 88-degree calculation:', error);

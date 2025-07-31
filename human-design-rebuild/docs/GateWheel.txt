@@ -1,0 +1,200 @@
+Complete Human Design Gate Wheel
+All 64 Gates with Tropical Degree Ranges
+Key Information:
+
+Each gate spans exactly 5.625 degrees (360° ÷ 64 gates = 5.625°)
+Each line within a gate spans 0.9375 degrees (5.625° ÷ 6 lines = 0.9375°)
+The gates follow the tropical zodiac system (seasonal/earth-sun relationship)
+Gates are arranged in the order they appear around the Rave Mandala (not numerically 1-64)
+
+
+♈ ARIES (0° - 30°)
+Gate 25 - Innocence/Spirit of the Self
+0°00'00" - 3°52'30"
+Gate 17 - Following/Opinions
+3°52'30" - 9°30'00"
+Gate 21 - Control/The Hunter
+9°30'00" - 15°07'30"
+Gate 51 - Shock/Arousing
+15°07'30" - 20°45'00"
+Gate 42 - Increase/Completion
+20°45'00" - 26°22'30"
+Gate 3 - Ordering/Difficulty at the Beginning
+26°22'30" - 30°00'00"
+
+♉ TAURUS (0° - 30°)
+Gate 3 - Ordering/Difficulty at the Beginning
+0°00'00" - 2°00'00"
+Gate 27 - Nourishment/Caring
+2°00'00" - 7°37'30"
+Gate 24 - Return/Rationalization
+7°37'30" - 13°15'00"
+Gate 2 - Direction of the Self/The Receptive
+13°15'00" - 18°52'30"
+Gate 23 - Splitting Apart/Assimilation
+18°52'30" - 24°30'00"
+Gate 8 - Holding Together/Contribution
+24°30'00" - 30°00'00"
+
+♊ GEMINI (0° - 30°)
+Gate 8 - Holding Together/Contribution
+0°00'00" - 0°07'30"
+Gate 20 - Contemplation/The Now
+0°07'30" - 5°45'00"
+Gate 16 - Skills/Enthusiasm
+5°45'00" - 11°22'30"
+Gate 35 - Progress/Change
+11°22'30" - 17°00'00"
+Gate 45 - Gathering Together/The King
+17°00'00" - 22°37'30"
+Gate 12 - Standstill/Caution
+22°37'30" - 28°15'00"
+Gate 15 - Extremes/Modesty
+28°15'00" - 30°00'00"
+
+♋ CANCER (0° - 30°)
+Gate 15 - Extremes/Modesty
+0°00'00" - 3°52'30"
+Gate 52 - Keeping Still/Inaction
+3°52'30" - 9°30'00"
+Gate 39 - Obstruction/Provocation
+9°30'00" - 15°07'30"
+Gate 53 - Development/Beginnings
+15°07'30" - 20°45'00"
+Gate 62 - Preponderance of the Small/Details
+20°45'00" - 26°22'30"
+Gate 56 - The Wanderer/Stimulation
+26°22'30" - 30°00'00"
+
+♌ LEO (0° - 30°)
+Gate 56 - The Wanderer/Stimulation
+0°00'00" - 2°00'00"
+Gate 31 - Influence/Leading
+2°00'00" - 7°37'30"
+Gate 33 - Retreat/Privacy
+7°37'30" - 13°15'00"
+Gate 7 - The Army/The Role of Self
+13°15'00" - 18°52'30"
+Gate 4 - Youthful Folly/Formulization
+18°52'30" - 24°30'00"
+Gate 29 - The Abysmal/Perseverance
+24°30'00" - 30°00'00"
+
+♍ VIRGO (0° - 30°)
+Gate 29 - The Abysmal/Perseverance
+0°00'00" - 0°07'30"
+Gate 59 - Dispersion/Sexuality
+0°07'30" - 5°45'00"
+Gate 40 - Deliverance/Aloneness
+5°45'00" - 11°22'30"
+Gate 64 - Before Completion/Confusion
+11°22'30" - 17°00'00"
+Gate 47 - Oppression/Realization
+17°00'00" - 22°37'30"
+Gate 6 - Conflict/Friction
+22°37'30" - 28°15'00"
+Gate 46 - Pushing Upward/Determination
+28°15'00" - 30°00'00"
+
+♎ LIBRA (0° - 30°)
+Gate 46 - Pushing Upward/Determination
+0°00'00" - 3°52'30"
+Gate 18 - Work on What Has Been Spoiled/Correction
+3°52'30" - 9°30'00"
+Gate 48 - The Well/Depth
+9°30'00" - 15°07'30"
+Gate 57 - The Gentle/Intuitive Insight
+15°07'30" - 20°45'00"
+Gate 32 - Duration/Continuity
+20°45'00" - 26°22'30"
+Gate 50 - The Caldron/Values
+26°22'30" - 30°00'00"
+
+♏ SCORPIO (0° - 30°)
+Gate 50 - The Caldron/Values
+0°00'00" - 2°00'00"
+Gate 28 - Preponderance of the Great/The Game Player
+2°00'00" - 7°37'30"
+Gate 44 - Coming to Meet/Alertness
+7°37'30" - 13°15'00"
+Gate 1 - The Creative/Self-Expression
+13°15'00" - 18°52'30"
+Gate 43 - Breakthrough/Insight
+18°52'30" - 24°30'00"
+Gate 14 - Possession in Great Measure/Power Skills
+24°30'00" - 30°00'00"
+
+♐ SAGITTARIUS (0° - 30°)
+Gate 14 - Possession in Great Measure/Power Skills
+0°00'00" - 0°07'30"
+Gate 34 - The Power of the Great/Power
+0°07'30" - 5°45'00"
+Gate 9 - The Taming Power of the Small/Focus
+5°45'00" - 11°22'30"
+Gate 5 - Waiting/Fixed Patterns
+11°22'30" - 17°00'00"
+Gate 26 - The Taming Power of the Great/The Egoist
+17°00'00" - 22°37'30"
+Gate 11 - Peace/Ideas
+22°37'30" - 28°15'00"
+Gate 10 - Treading/Behavior of the Self
+28°15'00" - 30°00'00"
+
+♑ CAPRICORN (0° - 30°)
+Gate 10 - Treading/Behavior of the Self
+0°00'00" - 3°52'30"
+Gate 58 - The Joyous/Vitality
+3°52'30" - 9°30'00"
+Gate 38 - Opposition/The Fighter
+9°30'00" - 15°07'30"
+Gate 54 - The Marrying Maiden/Ambition
+15°07'30" - 20°45'00"
+Gate 61 - Inner Truth/Mystery
+20°45'00" - 26°22'30"
+Gate 60 - Limitation/Acceptance
+26°22'30" - 30°00'00"
+
+♒ AQUARIUS (0° - 30°)
+Gate 60 - Limitation/Acceptance
+0°00'00" - 2°00'00"
+Gate 41 - Decrease/Contraction
+2°00'00" - 7°37'30"
+Gate 19 - Approach/Wanting
+7°37'30" - 13°15'00"
+Gate 13 - Fellowship with Men/The Listener
+13°15'00" - 18°52'30"
+Gate 49 - Revolution/Principles
+18°52'30" - 24°30'00"
+Gate 30 - The Clinging Fire/Feelings
+24°30'00" - 30°00'00"
+
+♓ PISCES (0° - 30°)
+Gate 30 - The Clinging Fire/Feelings
+0°00'00" - 0°07'30"
+Gate 55 - Abundance/Spirit
+0°07'30" - 5°45'00"
+Gate 37 - The Family/Friendship
+5°45'00" - 11°22'30"
+Gate 63 - After Completion/Doubt
+11°22'30" - 17°00'00"
+Gate 22 - Grace/Openness
+17°00'00" - 22°37'30"
+Gate 36 - Darkening of the Light/Crisis
+22°37'30" - 28°15'00"
+Gate 25 - Innocence/Spirit of the Self
+28°15'00" - 30°00'00"
+
+Important Notes
+
+Gate Overlap at Sign Boundaries: Several gates span across zodiac sign boundaries (like Gate 3 spanning from late Aries into early Taurus), which is normal in the Human Design system.
+Line Calculations: Each line within a gate spans approximately 0.9375 degrees, so lines progress every ~0.94 degrees within each gate.
+Tropical vs. Sidereal: This system uses tropical astrology (based on seasonal/earth-sun relationship) rather than sidereal astrology (fixed star positions).
+Solar Transit Pattern: The Sun spends approximately 5.5-6 days in each gate, progressing through all 6 lines before moving to the next gate.
+Gate Order: The gates don't follow numerical order (1-64) around the wheel but instead follow a specific sequence based on the I-Ching arrangement on the Rave Mandala.
+
+This reference can be used for:
+
+Determining which gate a planet was transiting at specific degrees
+Understanding the astrological context of activated gates
+Following current transits and their Human Design implications
+Converting between astrological degrees and Human Design gates

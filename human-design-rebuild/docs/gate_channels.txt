@@ -1,0 +1,174 @@
+# Human Design Technical Specifications
+
+## 1. Center-Gate Associations
+
+### HEAD CENTER
+- Gates: 61, 63, 64
+
+### AJNA CENTER
+- Gates: 47, 24, 4, 17, 43, 11
+
+### THROAT CENTER
+- Gates: 62, 23, 56, 35, 12, 45, 33, 8, 31, 20, 16
+
+### G CENTER (SELF)
+- Gates: 1, 13, 25, 46, 2, 15, 10, 7
+
+### HEART CENTER (EGO/WILL)
+- Gates: 21, 40, 26, 51
+
+### SPLEEN CENTER
+- Gates: 48, 57, 44, 50, 32, 28, 18
+
+### SOLAR PLEXUS CENTER (EMOTIONAL)
+- Gates: 6, 37, 22, 36, 30, 55, 49
+
+### SACRAL CENTER
+- Gates: 3, 42, 9, 59, 14, 29, 27, 34, 5
+
+### ROOT CENTER
+- Gates: 53, 60, 52, 19, 39, 41, 58, 38, 54
+
+## 2. Channel Definitions
+
+### FORMAT: Gate1-Gate2: Channel Name (Circuit)
+
+1-8: Channel of Inspiration (Individual)
+2-14: Channel of the Beat (Collective)
+3-60: Channel of Mutation (Individual)
+4-63: Channel of Logic (Collective)
+5-15: Channel of Rhythm (Collective)
+6-59: Channel of Intimacy (Tribal)
+7-31: Channel of the Alpha (Collective)
+9-52: Channel of Concentration (Collective)
+10-20: Channel of Awakening (Individual)
+10-34: Channel of Exploration (Individual)
+10-57: Channel of Perfected Form (Individual)
+11-56: Channel of Curiosity (Collective)
+12-22: Channel of Openness (Individual)
+13-33: Channel of the Prodigal (Collective)
+16-48: Channel of the Wavelength (Collective)
+17-62: Channel of Acceptance (Collective)
+18-58: Channel of Judgment (Collective)
+19-49: Channel of Synthesis (Tribal)
+20-34: Channel of Charisma (Individual)
+20-57: Channel of the Brainwave (Individual)
+21-45: Channel of Money (Tribal)
+23-43: Channel of Structuring (Individual)
+24-61: Channel of Awareness (Individual)
+25-51: Channel of Initiation (Individual)
+26-44: Channel of Surrender (Tribal)
+27-50: Channel of Preservation (Tribal)
+28-38: Channel of Struggle (Individual)
+29-46: Channel of Discovery (Collective)
+30-41: Channel of Recognition (Collective)
+32-54: Channel of Transformation (Tribal)
+34-57: Channel of Power (Individual)
+35-36: Channel of Transitoriness (Collective)
+37-40: Channel of Community (Tribal)
+39-55: Channel of Emoting (Individual)
+42-53: Channel of Maturation (Collective)
+47-64: Channel of Abstraction (Collective)
+
+## 3. Gate Classifications
+
+### INDIVIDUAL CIRCUIT GATES
+**Knowing Circuit:**
+- Gates: 61, 24, 43, 23, 8, 1, 2, 14, 57, 10, 20, 34, 51, 25, 38, 28
+
+**Centering Circuit:**
+- Gates: 61, 24, 43, 23, 8, 1, 2, 14, 57, 10, 20, 34, 51, 25, 38, 28
+
+**Integration Channels (subset):**
+- Gates: 57, 10, 20, 34
+
+### COLLECTIVE CIRCUIT GATES
+**Logic Circuit:**
+- Gates: 63, 4, 17, 62, 56, 11, 31, 7, 15, 5, 9, 52, 18, 58, 48, 16
+
+**Sensing Circuit:**
+- Gates: 64, 47, 6, 22, 12, 35, 36, 30, 41, 19, 13, 33, 29, 46, 42, 53
+
+### TRIBAL CIRCUIT GATES
+**Ego Circuit:**
+- Gates: 21, 45, 26, 40, 51, 25
+
+**Defense Circuit:**
+- Gates: 32, 50, 44, 27, 59, 6, 37, 40, 54, 19, 49
+
+## 4. Energy Type Determination Rules
+
+### MANIFESTOR
+- Defined Throat Center connected to a motor center (Heart, Solar Plexus, or Root)
+- Undefined Sacral Center
+- Motor to Throat connection required
+
+### GENERATOR
+- Defined Sacral Center
+- No motor to Throat connection
+
+### MANIFESTING GENERATOR
+- Defined Sacral Center
+- Motor to Throat connection (Sacral counts as motor)
+
+### PROJECTOR
+- Undefined Sacral Center
+- No motor to Throat connection
+- At least one defined center
+
+### REFLECTOR
+- All 9 centers undefined
+
+## 5. Authority Hierarchy
+
+1. **Emotional Authority**: Defined Solar Plexus
+2. **Sacral Authority**: Defined Sacral (no defined Solar Plexus)
+3. **Splenic Authority**: Defined Spleen (no Sacral or Solar Plexus)
+4. **Ego Authority**: Defined Heart connected to G Center or Throat
+5. **Self-Projected Authority**: Defined G Center connected to Throat
+6. **Mental Authority**: Defined Ajna and/or Head (Projectors only)
+7. **Lunar Authority**: No inner authority (Reflectors only)
+
+## 6. Definition Types
+
+### SINGLE DEFINITION
+- All defined centers connected in one continuous circuit
+
+### SPLIT DEFINITION
+- Two separate groups of defined centers
+
+### TRIPLE SPLIT DEFINITION
+- Three separate groups of defined centers
+
+### QUADRUPLE SPLIT DEFINITION
+- Four separate groups of defined centers
+
+## 7. Implementation Notes
+
+### Center Definition Logic
+```
+A center is defined if:
+1. Both gates of at least one channel touching the center are activated
+2. The activation can be from conscious (black) or unconscious (red) data
+```
+
+### Channel Activation Logic
+```
+A channel is active if:
+1. Both gates forming the channel are activated
+2. Gates can be activated by different sources (e.g., one from Sun, one from Moon)
+```
+
+### Type Determination Algorithm
+```
+1. Check if all centers undefined → REFLECTOR
+2. Check if Sacral defined:
+   - If yes, check motor→throat → MG or GENERATOR
+   - If no, check motor→throat → MANIFESTOR or PROJECTOR
+```
+
+### Connection Paths for Motor-Throat
+- Heart to Throat: 21-45, 26-44
+- Solar Plexus to Throat: Direct channels or through other centers
+- Root to Throat: Through intermediate centers only
+- Sacral to Throat: Through intermediate centers only

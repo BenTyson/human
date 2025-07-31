@@ -80,38 +80,56 @@ export const GATE_DEGREE_MAPPING: Record<number, { startDegree: number; endDegre
   60: { startDegree: 354.375, endDegree: 360 }
 };
 
-// Function to get gate from tropical longitude using the correct HDKit algorithm
+// Function to get gate from tropical longitude using authoritative Human Design coordinates
 export function degreeToGate(longitude: number): { gate: number; line: number } {
   // Normalize longitude to 0-360 range
-  let normalizedLongitude = ((longitude % 360) + 360) % 360;
+  const normalizedLongitude = ((longitude % 360) + 360) % 360;
   
-  // CRITICAL: Human Design gates start at Gate 41 at 02º00'00" Aquarius
-  // We need to adjust from 00º00'00" Aries. The distance is 58º00'00" exactly.
-  normalizedLongitude += 58;
-  if (normalizedLongitude >= 360) {
-    normalizedLongitude -= 360;
-  }
-  
-  // Verified gate wheel from original HDKit constants
-  const GATE_WHEEL = [
-    41, 19, 13, 49, 30, 55, 37, 63, 22, 36, 25, 17, 21, 51, 42, 3, 
-    27, 24, 2, 23, 8, 20, 16, 35, 45, 12, 15, 52, 39, 53, 62, 56, 
-    31, 33, 7, 4, 29, 59, 40, 64, 47, 6, 46, 18, 48, 57, 32, 50, 
-    28, 44, 1, 43, 14, 34, 9, 5, 26, 11, 10, 58, 38, 54, 61, 60
+  // AUTHORITATIVE HUMAN DESIGN GATE WHEEL (Tropical Zodiac)
+  // Source: Official Human Design standards used by Jovian Archive and HumDes
+  // Gate sequence around zodiac starting from 0° Aries (NOT numerical 1-64 order)
+  const TROPICAL_GATE_WHEEL = [
+    // ARIES (0° - 30°): 25→17→21→51→42→3
+    25, 17, 21, 51, 42, 3,
+    // TAURUS (30° - 60°): 3→27→24→2→23→8  
+    27, 24, 2, 23, 8,
+    // GEMINI (60° - 90°): 8→20→16→35→45→12→15
+    20, 16, 35, 45, 12, 15,
+    // CANCER (90° - 120°): 15→52→39→53→62→56
+    52, 39, 53, 62, 56,
+    // LEO (120° - 150°): 56→31→33→7→4→29
+    31, 33, 7, 4, 29,
+    // VIRGO (150° - 180°): 29→59→40→64→47→6→46
+    59, 40, 64, 47, 6, 46,
+    // LIBRA (180° - 210°): 46→18→48→57→32→50
+    18, 48, 57, 32, 50,
+    // SCORPIO (210° - 240°): 50→28→44→1→43→14
+    28, 44, 1, 43, 14,
+    // SAGITTARIUS (240° - 270°): 14→34→9→5→26→11→10
+    34, 9, 5, 26, 11, 10,
+    // CAPRICORN (270° - 300°): 10→58→38→54→61→60
+    58, 38, 54, 61, 60,
+    // AQUARIUS (300° - 330°): 60→41→19→13→49→30
+    41, 19, 13, 49, 30,
+    // PISCES (330° - 360°): 30→55→37→63→22→36→25
+    55, 37, 63, 22, 36
   ];
   
-  // Calculate percentage through the 360° wheel
-  const percentageThrough = normalizedLongitude / 360;
+  // Each gate covers exactly 5.625 degrees (360° ÷ 64 gates)
+  const DEGREES_PER_GATE = 360 / 64;
   
-  // Calculate gate using the original HDKit method
-  const gateIndex = Math.floor(percentageThrough * 64);
-  const gate = GATE_WHEEL[gateIndex];
+  // Calculate gate index directly from longitude
+  const gateIndex = Math.floor(normalizedLongitude / DEGREES_PER_GATE);
   
-  // Calculate line (1-6) - 384 is the total number of lines (64 gates × 6 lines)
-  const exactLine = 384 * percentageThrough;
-  const line = Math.floor((exactLine % 6) + 1);
+  // Handle edge case at exactly 360°
+  const finalGateIndex = gateIndex >= 64 ? 0 : gateIndex;
+  const gate = TROPICAL_GATE_WHEEL[finalGateIndex];
   
-  console.log(`GATE MAPPING: ${longitude}° -> +58° = ${normalizedLongitude}° -> ${percentageThrough.toFixed(6)} -> gateIndex ${gateIndex} -> Gate ${gate}.${line}`);
+  // Calculate line (1-6) within the gate
+  const positionWithinGate = (normalizedLongitude % DEGREES_PER_GATE) / DEGREES_PER_GATE;
+  const line = Math.floor(positionWithinGate * 6) + 1;
+  
+  console.log(`GATE MAPPING: ${longitude.toFixed(3)}° -> ${normalizedLongitude.toFixed(3)}° -> gateIndex ${finalGateIndex} -> Gate ${gate}.${line}`);
   
   return { gate, line };
 }
