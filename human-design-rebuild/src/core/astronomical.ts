@@ -49,6 +49,14 @@ export interface PlanetaryPosition {
 export function initializeEphemeris(ephemerisPath?: string): void {
   if (ephemerisPath) {
     swisseph.swe_set_ephe_path(ephemerisPath);
+  } else {
+    // Try default path from existing installation
+    const defaultPath = '/Users/bentyson/human/human-design-app/node_modules/swisseph/ephe';
+    try {
+      swisseph.swe_set_ephe_path(defaultPath);
+    } catch (error) {
+      console.warn('Swiss Ephemeris files not found at default path, will use Moshier fallback');
+    }
   }
 }
 
