@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=0">
+		<link href="style.css" rel="stylesheet">
+		<link href="css/theme.css" rel="stylesheet">
+		<link href="css/selectize.css" rel="stylesheet">
+		<link href="css/typeahead.css" rel="stylesheet">
+		<title>Form example - Bodygraphchart.com</title>
+	</head>
+	<body>
+		<section id="bgchart-human-design-bodychart">
+			<div class="nav-header"> <a href="https://bodygraphchart.com/" title="BodyGraphChart"> <noscript><img src="https://bodygraphchart.com/wp-content/themes/bodygraphchart/images/logo.svg" alt="BodyGraphChart" class="fimg-fluid"></noscript><img src="https://bodygraphchart.com/wp-content/themes/bodygraphchart/images/logo.svg" data-src="https://bodygraphchart.com/wp-content/themes/bodygraphchart/images/logo.svg" alt="BodyGraphChart" class="fimg-fluid lazyloaded"> </a></div>
+			
+			<form class="birth-date">
+				<h1>Please enter your birth details below</h1>
+				<p class="api">
+					<label for="year">API Key</label>
+					<input type="text" name="api_key" id="api_key" required>
+					<small>If you don't have your own API Key, please <a href="mailto:info@bodygraphchart.com?subject=BodyGraphChart: Request API Key">get in touch with us</a>.</small>
+				</p>
+				<p>
+					<label for="year">Year</label>
+					<select name="year" id="year" required></select>
+				</p>
+				<p>
+					<label for="month">Month</label>
+					<select name="month" id="month" required></select>
+				</p>
+				<p>
+					<label for="day">Day</label>
+					<select name="day" id="day" required></select>
+				</p>
+				<p>
+					<label for="hour">Hour</label>
+					<select name="hour" id="hour" required></select>
+				</p>
+				<p>
+					<label for="minutes">Minutes</label>
+					<select name="minutes" id="minutes" required></select>
+				</p>
+				<p>
+					<label for="location">Location</label>
+					<input type="text" name="location" id="location" required>
+					<input type="hidden" name="timezone" id="timezone">
+				</p>
+				<p>
+					<input type="submit" value="View your Chart">
+				</p>
+			</form>
+			<div class="clear"></div>
+			<div class="copy-footer">
+				&copy; 2021 Human Design Body Chart developed by <a href="https://bodygraphchart.com" target="_blank">BODYGRAPHCHART.COM</a>
+			</div>
+		</section>
+		<script src="js/jquery.js"></script>
+		<script src="js/selectize.js"></script>
+		<script src="js/typeahead.bundle.js"></script>
+		<script src="js/main.js"></script>
+	</body>
+</html>

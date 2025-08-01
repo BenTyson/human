@@ -12,7 +12,11 @@
     "lint": "eslint src/**/*.ts",
     "clean": "rm -rf dist"
   },
-  "keywords": ["human-design", "astrology", "bodygraph"],
+  "keywords": [
+    "human-design",
+    "astrology",
+    "bodygraph"
+  ],
   "author": "",
   "license": "MIT",
   "devDependencies": {
@@ -26,7 +30,8 @@
     "typescript": "^5.3.3"
   },
   "dependencies": {
-    "swisseph": "^0.5.17",
-    "moment-timezone": "^0.5.45"
+    "form-data": "^4.0.4",
+    "moment-timezone": "^0.5.45",
+    "swisseph": "^0.5.17"
   }
 }

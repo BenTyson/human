@@ -53,8 +53,12 @@ node simple-server.js    # Serves v1 sample app on port 8080
 - Calculations are for Human Design chart generation only
 
 ## When Making Changes
-1. Always test calculations against known reference values
-2. Verify both personality and design calculations
-3. Check gate boundaries (0°, 360°, and gate transitions)
-4. Test timezone conversions for different locations
-5. Ensure Swiss Ephemeris integration works properly
+1. **ALWAYS TEST ALL 3 SUBJECTS**: Never test just one data point - Dave, Ben, AND Elodi must all be tested for every change
+2. Always test calculations against known reference values
+3. Verify both personality and design calculations
+4. Check gate boundaries (0°, 360°, and gate transitions)
+5. Test timezone conversions for different locations
+6. Ensure Swiss Ephemeris integration works properly
+
+## CRITICAL TESTING RULE
+**NEVER make assumptions based on a single test subject.** Every calculation change must be verified against all 3 reference subjects (Dave, Ben, Elodi) to ensure systematic accuracy, not just coincidental matches.

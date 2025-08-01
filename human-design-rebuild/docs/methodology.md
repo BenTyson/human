@@ -253,6 +253,31 @@ Incarnation Cross: TBD
 
 ---
 
+---
+
+## 🚨 **CRITICAL ISSUE IDENTIFIED**
+
+### **Design Date Calculation Error:**
+- **Status**: Systematic error affecting all 3 test subjects
+- **Pattern**: Personality calculations 100% accurate, design calculations all wrong
+- **Root Cause**: Issue in 88° solar arc calculation in `calculateDesignDate` function
+- **Impact**: All design Sun positions incorrect, affecting energy type and other calculations
+
+### **Test Results:**
+| Subject | Personality Sun | Design Sun Expected | Design Sun Actual | Status |
+|---------|----------------|-------------------|------------------|---------|
+| Dave    | Gate 26 ✅     | Gate 45           | Gate 6 ❌        | Error   |
+| Ben     | Gate 14 ✅     | Gate 8            | Gate 29 ❌       | Error   |
+| Elodi   | Gate 53 ✅     | Gate 54           | Gate 42 ❌       | Error   |
+
+### **Investigation Required:**
+1. Verify 88° solar arc direction (forward vs backward)
+2. Check coordinate system consistency
+3. Compare calculated design dates with reference data
+4. Validate astronomical accuracy of design calculation
+
+---
+
 **Last Updated**: July 31, 2025  
-**Status**: Research COMPLETE - Ready for Phase 3 Implementation  
-**Next Step**: Begin astronomical foundation development
+**Status**: Phase 4 Implementation - Critical Bug Investigation  
+**Next Step**: Debug and fix design date calculation methodology
