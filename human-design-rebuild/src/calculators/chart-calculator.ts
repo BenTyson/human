@@ -26,8 +26,9 @@ import {
   ChannelDefinition,
   getActiveChannels,
   getDefinedCenters,
-  hasMotorToThroatConnection
-} from '../human-design/centers-channels';
+  hasMotorToThroatConnection,
+  determineDefinitionType
+} from '../human-design/centers-channels-graph';
 
 /**
  * Energy Type determination
@@ -99,7 +100,7 @@ export interface HumanDesignChart {
   energyType: EnergyType;
   authority: Authority;
   profile: string;        // e.g., "5/1"
-  definitionType: DefinitionType;
+  definitionType: string;
   
   // Additional properties
   strategy: string;
@@ -203,8 +204,8 @@ export async function calculateHumanDesignChart(
   const designSun = designActivations.find(a => a.planet === 'SUN');
   const profile = `${personalitySun?.gateLine.line || 1}/${designSun?.gateLine.line || 1}`;
   
-  // Determine definition type
-  const definitionType = determineDefinitionType(definedCenters, activeChannels);
+  // Determine definition type using graph analysis
+  const definitionType = determineDefinitionType(activeChannels);
   
   // Get strategy, not-self, signature based on type
   const { strategy, notSelfTheme, signature } = getTypeProperties(energyType);
@@ -323,68 +324,6 @@ function determineAuthority(
 /**
  * Determine definition type based on center connections
  */
-function determineDefinitionType(
-  definedCenters: Set<HDCenter>,
-  activeChannels: ChannelDefinition[]
-): DefinitionType {
-  if (definedCenters.size === 0) {
-    return DefinitionType.NO_DEFINITION;
-  }
-  
-  // Build connection graph
-  const connections = new Map<HDCenter, Set<HDCenter>>();
-  
-  for (const channel of activeChannels) {
-    const [center1, center2] = channel.centers;
-    
-    if (!connections.has(center1)) {
-      connections.set(center1, new Set());
-    }
-    if (!connections.has(center2)) {
-      connections.set(center2, new Set());
-    }
-    
-    connections.get(center1)!.add(center2);
-    connections.get(center2)!.add(center1);
-  }
-  
-  // Find connected components using DFS
-  const visited = new Set<HDCenter>();
-  const components: Set<HDCenter>[] = [];
-  
-  for (const center of definedCenters) {
-    if (!visited.has(center)) {
-      const component = new Set<HDCenter>();
-      const stack = [center];
-      
-      while (stack.length > 0) {
-        const current = stack.pop()!;
-        if (visited.has(current)) continue;
-        
-        visited.add(current);
-        component.add(current);
-        
-        const neighbors = connections.get(current) || new Set();
-        for (const neighbor of neighbors) {
-          if (!visited.has(neighbor) && definedCenters.has(neighbor)) {
-            stack.push(neighbor);
-          }
-        }
-      }
-      
-      components.push(component);
-    }
-  }
-  
-  // Return definition type based on number of components
-  switch (components.length) {
-    case 1: return DefinitionType.SINGLE;
-    case 2: return DefinitionType.SPLIT;
-    case 3: return DefinitionType.TRIPLE;
-    case 4: return DefinitionType.QUADRUPLE;
-    default: return DefinitionType.SINGLE;
-  }
-}
 
 /**
  * Get strategy, not-self theme, and signature for energy type
