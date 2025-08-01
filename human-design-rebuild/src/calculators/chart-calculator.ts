@@ -141,7 +141,7 @@ export async function calculateHumanDesignChart(
   }));
   
   // Special handling for design activations
-  // Design Sun uses Birth Earth Gate but keeps original line
+  // Design Sun uses Birth Earth Gate, Design Earth uses Birth Sun Gate
   const designActivations = designPlanets.map(planet => {
     const originalGateLine = longitudeToGateLine(planet.longitude);
     
@@ -161,6 +161,26 @@ export async function calculateHumanDesignChart(
             line: originalGateLine.line,  // Keep design sun line
             degrees: planet.longitude,
             gateInfo: birthEarthGate.gateInfo
+          }
+        };
+      }
+    }
+    
+    // If this is the Earth, use Birth Sun Gate but keep design line
+    if (planet.planet === 'EARTH') {
+      const birthSun = personalityPlanets.find(p => p.planet === 'SUN');
+      if (birthSun) {
+        const birthSunGate = longitudeToGateLine(birthSun.longitude);
+        
+        // Use birth sun gate but keep original design line
+        return {
+          planet: planet.planet,
+          position: planet,
+          gateLine: {
+            gate: birthSunGate.gate,
+            line: originalGateLine.line,  // Keep design earth line
+            degrees: planet.longitude,
+            gateInfo: birthSunGate.gateInfo
           }
         };
       }
