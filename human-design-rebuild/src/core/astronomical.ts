@@ -18,6 +18,7 @@ export const PLANETS = {
   NEPTUNE: swisseph.SE_NEPTUNE,
   PLUTO: swisseph.SE_PLUTO,
   TRUE_NODE: swisseph.SE_TRUE_NODE,
+  CHIRON: swisseph.SE_CHIRON,
   // Earth is calculated as opposite Sun
   EARTH: -1,
   // South Node is opposite North Node
@@ -125,7 +126,7 @@ export function calculatePlanetPosition(
 }
 
 /**
- * Calculate all 13 planetary positions for Human Design
+ * Calculate all 14 planetary positions for Human Design
  * @param julianDay - Julian Day number (UT)
  * @returns Array of all planetary positions
  */
@@ -144,7 +145,8 @@ export function calculateAllPlanets(julianDay: number): PlanetaryPosition[] {
     PLANETS.URANUS,
     PLANETS.NEPTUNE,
     PLANETS.PLUTO,
-    PLANETS.TRUE_NODE
+    PLANETS.TRUE_NODE,
+    PLANETS.CHIRON
   ];
 
   for (const planet of standardPlanets) {

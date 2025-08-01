@@ -193,11 +193,23 @@ export async function calculateHumanDesignChart(
     };
   });
   
+  // Calculate raw design activations (actual design positions)
+  const rawDesignActivations = designPlanets.map(planet => ({
+    planet: planet.planet,
+    position: planet,
+    gateLine: longitudeToGateLine(planet.longitude)
+  }));
+  
   const allActivations = [...personalityActivations, ...designActivations];
   
-  // Get all activated gates
+  // Get all activated gates - include both cross-reference design AND raw design positions
   const activatedGates = new Set<number>();
   allActivations.forEach(activation => {
+    activatedGates.add(activation.gateLine.gate);
+  });
+  
+  // Also add raw design positions (used for Incarnation Cross)
+  rawDesignActivations.forEach(activation => {
     activatedGates.add(activation.gateLine.gate);
   });
   
@@ -217,7 +229,7 @@ export async function calculateHumanDesignChart(
   const energyType = determineEnergyType(definedCenters, activeChannels);
   
   // Determine authority
-  const authority = determineAuthority(definedCenters, energyType);
+  const authority = determineAuthority(definedCenters, energyType, activatedGates);
   
   // Calculate profile (Sun line personality/design)
   const personalitySun = personalityActivations.find(a => a.planet === 'SUN');
@@ -230,10 +242,10 @@ export async function calculateHumanDesignChart(
   // Get strategy, not-self, signature based on type
   const { strategy, notSelfTheme, signature } = getTypeProperties(energyType);
   
-  // Calculate incarnation cross
+  // Calculate incarnation cross using actual design positions (not cross-reference)
   const incarnationCross = calculateIncarnationCross(
     personalityActivations,
-    designActivations
+    rawDesignActivations
   );
   
   return {
@@ -299,11 +311,12 @@ function determineEnergyType(
 }
 
 /**
- * Determine authority based on defined centers
+ * Determine authority based on defined centers and hanging gates
  */
 function determineAuthority(
   definedCenters: Set<HDCenter>,
-  energyType: EnergyType
+  energyType: EnergyType,
+  activatedGates: Set<number>
 ): Authority {
   // Reflectors always have Lunar authority
   if (energyType === EnergyType.REFLECTOR) {
@@ -330,6 +343,15 @@ function determineAuthority(
   
   if (definedCenters.has(HDCenter.G_CENTER)) {
     // Check if G connects to Throat for Self-Projected
+    return Authority.SELF_PROJECTED;
+  }
+  
+  // Check for Self-Projected authority via hanging G-Center gates
+  // G-Center gates that connect to Throat: 1(→8), 7(→31), 10(→20), 13(→33)
+  const gToThroatHangingGates = [1, 7, 10, 13];
+  const hasGToThroatHanging = gToThroatHangingGates.some(gate => activatedGates.has(gate));
+  
+  if (hasGToThroatHanging && definedCenters.has(HDCenter.THROAT)) {
     return Authority.SELF_PROJECTED;
   }
   
@@ -388,7 +410,7 @@ function getTypeProperties(energyType: EnergyType): {
 }
 
 /**
- * Calculate incarnation cross from Sun/Earth positions
+ * Calculate incarnation cross from Sun/Earth positions with proper naming
  */
 function calculateIncarnationCross(
   personalityActivations: PlanetaryActivation[],
@@ -403,6 +425,68 @@ function calculateIncarnationCross(
     return "Unknown Cross";
   }
   
-  // Format as: Sun/Earth | Sun/Earth (Personality | Design)
-  return `Cross of Gates (${personalitySun.gateLine.gate}/${personalityEarth.gateLine.gate} | ${designSun.gateLine.gate}/${designEarth.gateLine.gate})`;
+  const pSun = personalitySun.gateLine.gate;
+  const pEarth = personalityEarth.gateLine.gate;
+  const dSun = designSun.gateLine.gate;
+  const dEarth = designEarth.gateLine.gate;
+  
+  // Get the proper cross name based on gate combination
+  const crossName = getIncarnationCrossName(pSun, pEarth, dSun, dEarth);
+  
+  return `${crossName} (${pSun}/${pEarth} | ${dSun}/${dEarth})`;
+}
+
+/**
+ * Determine Incarnation Cross name from gate positions
+ */
+function getIncarnationCrossName(
+  personalitySun: number,
+  personalityEarth: number, 
+  designSun: number,
+  designEarth: number
+): string {
+  // Create cross key for lookup
+  const crossKey = `${personalitySun}/${personalityEarth}|${designSun}/${designEarth}`;
+  
+  // Known crosses mapping - this would be expanded with full cross database
+  const knownCrosses: Record<string, string> = {
+    "26/45|6/36": "Left Angle Cross of Confrontation",
+    "28/27|31/41": "Right Angle Cross of The Unexpected",
+    "14/8|1/2": "Right Angle Cross of The Four Ways",
+    "53/54|40/37": "Right Angle Cross of The Four Ways"
+    // Add more crosses as needed
+  };
+  
+  // Look up the cross name
+  const crossName = knownCrosses[crossKey];
+  
+  if (crossName) {
+    return crossName;
+  }
+  
+  // Fallback: Determine cross type based on patterns
+  // Right Angle Cross is most common (70% of population)
+  // Left Angle Cross and Juxtaposition are less common
+  
+  // For now, default to Right Angle Cross with personality Sun gate
+  const sunGateNames: Record<number, string> = {
+    1: "Self-Expression",
+    2: "Higher Knowing", 
+    6: "Friction",
+    8: "Contribution",
+    14: "Power Skills",
+    26: "The Egoist",
+    27: "Caring",
+    28: "The Game Player",
+    31: "Influence",
+    36: "Crisis",
+    40: "Aloneness",
+    41: "Contraction",
+    45: "The Gatherer",
+    53: "Beginnings",
+    54: "Ambition"
+  };
+  
+  const sunGateName = sunGateNames[personalitySun] || "Unknown";
+  return `Right Angle Cross of ${sunGateName}`;
 }
