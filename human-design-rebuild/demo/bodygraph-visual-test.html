@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Professional BodyGraph - Visual Test</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .container {
+            position: relative;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            gap: 40px;
+            max-width: 1400px;
+        }
+        
+        .bodygraph-svg {
+            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+            background: radial-gradient(ellipse at center, rgba(255,255,255,0.02) 0%, rgba(0,0,0,0.1) 100%);
+            border-radius: 12px;
+        }
+        
+        .planetary-list {
+            width: 200px;
+            padding: 20px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        
+        .planetary-list-left {
+            text-align: left;
+        }
+        
+        .planetary-list-right {
+            text-align: right;
+        }
+        
+        .planetary-header {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid;
+            color: #ffffff;
+        }
+        
+        .planetary-header.design {
+            border-bottom-color: #ff6b6b;
+        }
+        
+        .planetary-header.personality {
+            border-bottom-color: #4ecdc4;
+        }
+        
+        .planetary-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            padding: 4px 0;
+        }
+        
+        .planet-symbol {
+            font-size: 16px;
+            font-weight: 500;
+            margin-right: 8px;
+        }
+        
+        .gate-number {
+            font-size: 16px;
+            font-weight: 600;
+            color: #ffffff;
+        }
+        
+        h1 {
+            position: absolute;
+            top: -60px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: 2em;
+            font-weight: 700;
+            margin: 0;
+            white-space: nowrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Professional BodyGraph Visualization</h1>
+        
+        <!-- Design Side (Left) -->
+        <div class="planetary-list planetary-list-left">
+            <div class="planetary-header design">Design</div>
+            <div class="planetary-item">
+                <span class="planet-symbol">☉</span>
+                <span class="gate-number">45.3</span>
+            </div>
+            <div class="planetary-item">
+                <span class="planet-symbol">♁</span>
+                <span class="gate-number">26.3</span>
+            </div>
+            <div class="planetary-item">
+                <span class="planet-symbol">☽</span>
+                <span class="gate-number">36.3</span>
+            </div>
+            <div class="planetary-item">
+                <span class="planet-symbol">☊</span>
+                <span class="gate-number">21.1</span>
+            </div>
+            <div class="planetary-item">
+                <span class="planet-symbol">☋</span>
+                <span class="gate-number">48.1</span>
+            </div>
+            <div class="planetary-item">
+                <span class="planet-symbol">☿</span>
+                <span class="gate-number">57.5</span>
+            </div>
+            <div class="planetary-item">
+                <span class="planet-symbol">♀</span>
+                <span class="gate-number">57.3</span>
+            </div>
+            <div class="planetary-item">
+                <span class="planet-symbol">♂</span>
+                <span class="gate-number">29.3</span>
+            </div>
+            <div class="planetary-item">
+                <span class="planet-symbol">♃</span>
+                <span class="gate-number">47.1</span>
+            </div>
+            <div class="planetary-item">
+                <span class="planet-symbol">♄</span>
+                <span class="gate-number">42.4</span>
+            </div>
+            <div class="planetary-item">
+                <span class="planet-symbol">♅</span>
+                <span class="gate-number">46.2</span>
+            </div>
+            <div class="planetary-item">
+                <span class="planet-symbol">♆</span>
+                <span class="gate-number">43.6</span>
+            </div>
+            <div class="planetary-item">
+                <span class="planet-symbol">♇</span>
+                <span class="gate-number">6.1</span>
+            </div>
+        </div>
+        
+        <!-- SVG BodyGraph -->
+        <svg class="bodygraph-svg" width="851" height="1309" viewBox="0 0 851 1309">
+            <!-- SVG definitions for gradients and effects -->
+            <defs>
+                <radialGradient id="backgroundGradient" cx="50%" cy="50%" r="70%">
+                    <stop offset="0%" stop-color="rgba(255,255,255,0.03)" />
+                    <stop offset="100%" stop-color="rgba(0,0,0,0.15)" />
+                </radialGradient>
+                
+                <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+                    <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+                    <feMerge> 
+                        <feMergeNode in="coloredBlur"/>
+                        <feMergeNode in="SourceGraphic"/> 
+                    </feMerge>
+                </filter>
+                
+                <filter id="centerGlow" x="-50%" y="-50%" width="200%" height="200%">
+                    <feGaussianBlur stdDeviation="6" result="coloredBlur"/>
+                    <feMerge> 
+                        <feMergeNode in="coloredBlur"/>
+                        <feMergeNode in="SourceGraphic"/> 
+                    </feMerge>
+                </filter>
+            </defs>
+            
+            <!-- Background -->
+            <rect width="100%" height="100%" fill="url(#backgroundGradient)" />
+            
+            <!-- Human silhouette -->
+            <g id="human-silhouette" opacity="0.08">
+                <path d="M425 50 
+                         Q 375 35 325 60
+                         Q 275 85 250 130
+                         Q 225 175 240 220
+                         Q 255 265 290 300
+                         Q 270 340 250 380
+                         Q 230 420 240 460
+                         Q 250 500 270 540
+                         Q 250 580 230 620
+                         Q 210 660 220 700
+                         Q 230 740 250 780
+                         Q 230 820 210 860
+                         Q 190 900 200 940
+                         Q 210 980 230 1020
+                         Q 210 1060 190 1100
+                         Q 170 1140 180 1180
+                         Q 190 1220 210 1260
+                         Q 230 1300 270 1320
+                         L 570 1320
+                         Q 610 1300 630 1260
+                         Q 650 1220 660 1180
+                         Q 670 1140 650 1100
+                         Q 630 1060 610 1020
+                         Q 630 980 650 940
+                         Q 670 900 660 860
+                         Q 650 820 630 780
+                         Q 650 740 670 700
+                         Q 680 660 660 620
+                         Q 640 580 620 540
+                         Q 640 500 650 460
+                         Q 660 420 640 380
+                         Q 620 340 600 300
+                         Q 635 265 650 220
+                         Q 665 175 640 130
+                         Q 615 85 565 60
+                         Q 515 35 465 50
+                         Q 445 45 425 50 Z"
+                      fill="none" 
+                      stroke="rgba(255,255,255,0.06)" 
+                      stroke-width="2" />
+            </g>
+            
+            <!-- Centers -->
+            <!-- HEAD CENTER -->
+            <path d="M340.59,156.62a5.48,5.48,0,0,1-4.68-8.32L414,17.86a5.49,5.49,0,0,1,7.54-1.9,5.64,5.64,0,0,1,1.86,1.84l81.12,131.34a5.5,5.5,0,0,1-4.68,8.39Z" 
+                  fill="#FFD700" 
+                  stroke="#FFD700" 
+                  stroke-width="2" 
+                  opacity="0.9" 
+                  filter="url(#centerGlow)" />
+            
+            <!-- AJNA CENTER -->
+            <path d="M420.37,355.14a5.44,5.44,0,0,1-4.73-2.69L335.92,218.14a5.49,5.49,0,0,1,1.89-7.53,5.57,5.57,0,0,1,2.84-.78l159.5.82a5.51,5.51,0,0,1,4.7,8.32L425.12,352.49A5.48,5.48,0,0,1,420.37,355.14Z" 
+                  fill="#32CD32" 
+                  stroke="#32CD32" 
+                  stroke-width="2" 
+                  opacity="0.9" 
+                  filter="url(#centerGlow)" />
+            
+            <!-- THROAT CENTER -->
+            <path d="M349.37,558.45a6,6,0,0,1-6-6l.68-148a6,6,0,0,1,6-6L491.4,399a6,6,0,0,1,6,6l-.67,148a6,6,0,0,1-6,6Z" 
+                  fill="#8B4513" 
+                  stroke="#8B4513" 
+                  stroke-width="2" 
+                  opacity="0.9" 
+                  filter="url(#centerGlow)" />
+            
+            <!-- G CENTER -->
+            <path d="M420,795.51a6.4,6.4,0,0,1-4.58-1.9l-95.86-96.68a6.48,6.48,0,0,1,0-9.13l96.69-95.92a6.46,6.46,0,0,1,9.12,0l95.9,96.72a6.48,6.48,0,0,1,0,9.12l-96.69,95.93A6.48,6.48,0,0,1,420,795.51Z" 
+                  fill="#FFD700" 
+                  stroke="#FFD700" 
+                  stroke-width="2" 
+                  opacity="0.9" 
+                  filter="url(#centerGlow)" />
+            
+            <!-- HEART CENTER -->
+            <path d="M527.17,838.36a6.76,6.76,0,0,1-4.73-11.54l78.29-78.14a6.66,6.66,0,0,1,4.76-2,6.75,6.75,0,0,1,5.5,2.83l56.48,79A6.76,6.76,0,0,1,662,839.19Z" 
+                  fill="#DC143C" 
+                  stroke="#DC143C" 
+                  stroke-width="2" 
+                  opacity="0.9" 
+                  filter="url(#centerGlow)" />
+            
+            <!-- SACRAL CENTER -->
+            <path d="M348.86,1078.19a5.5,5.5,0,0,1-5.48-5.52L344,930.26a5.5,5.5,0,0,1,5.5-5.48l142.43.56a5.5,5.5,0,0,1,5.48,5.52l-.57,142.41a5.54,5.54,0,0,1-5.5,5.48Z" 
+                  fill="#FF4500" 
+                  stroke="#FF4500" 
+                  stroke-width="2" 
+                  opacity="0.9" 
+                  filter="url(#centerGlow)" />
+            
+            <!-- ROOT CENTER -->
+            <path d="M348.86,1295.7a5.43,5.43,0,0,1-3.88-1.62,5.49,5.49,0,0,1-1.6-3.9l.57-135.56a5.5,5.5,0,0,1,5.5-5.48l142.43.57a5.5,5.5,0,0,1,5.48,5.52l-.57,135.56a5.54,5.54,0,0,1-5.5,5.48Z" 
+                  fill="#8B4513" 
+                  stroke="#8B4513" 
+                  stroke-width="2" 
+                  opacity="0.9" 
+                  filter="url(#centerGlow)" />
+            
+            <!-- SPLEEN CENTER (undefined) -->
+            <path d="M15.53,1063.92a5.53,5.53,0,0,1-5.5-5.45l-1.78-167a5.31,5.31,0,0,1,1.57-3.91,5.52,5.52,0,0,1,3.94-1.66,5.39,5.39,0,0,1,2.79.78l145.71,86.2a5.49,5.49,0,0,1,1.94,7.52h0a5.48,5.48,0,0,1-2,2l-144,80.85A5.61,5.61,0,0,1,15.53,1063.92Z" 
+                  fill="rgba(255,255,255,0.05)" 
+                  stroke="rgba(255,255,255,0.2)" 
+                  stroke-width="2" 
+                  opacity="0.4" />
+            
+            <!-- SOLAR PLEXUS CENTER (undefined) -->
+            <path d="M831.56,1063.92a5.48,5.48,0,0,1-2.68-.71L685,982.36a5.5,5.5,0,0,1-2.11-7.49h0a5.48,5.48,0,0,1,2-2l145.71-86.2a5.18,5.18,0,0,1,2.79-.78,5.51,5.51,0,0,1,5.51,5.51v.06l-1.78,167A5.53,5.53,0,0,1,831.56,1063.92Z" 
+                  fill="rgba(255,255,255,0.05)" 
+                  stroke="rgba(255,255,255,0.2)" 
+                  stroke-width="2" 
+                  opacity="0.4" />
+            
+            <!-- Sample Active Channels -->
+            <path d="M391.91,183.35l.38,31.39-17.4.17-.38-31.56" 
+                  fill="none" 
+                  stroke="#FFFFFF" 
+                  stroke-width="4" 
+                  opacity="1.0" 
+                  filter="url(#glow)" />
+            
+            <path d="M429.37,183.54l.38,30.8-17.39.16-.38-31" 
+                  fill="none" 
+                  stroke="#FFFFFF" 
+                  stroke-width="4" 
+                  opacity="1.0" 
+                  filter="url(#glow)" />
+            
+            <!-- Sample Gates - Activated -->
+            <g>
+                <!-- Gate 26 - Activated -->
+                <circle cx="554" cy="832" r="12.3" fill="#000000" stroke="#000000" stroke-width="2" filter="url(#glow)" />
+                <text x="554" y="832" text-anchor="middle" dominant-baseline="central" fill="#FFFFFF" font-size="12" font-weight="700">26</text>
+            </g>
+            
+            <g>
+                <!-- Gate 45 - Activated -->
+                <circle cx="479" cy="522" r="12.3" fill="#000000" stroke="#000000" stroke-width="2" filter="url(#glow)" />
+                <text x="479" y="522" text-anchor="middle" dominant-baseline="central" fill="#FFFFFF" font-size="12" font-weight="700">45</text>
+            </g>
+            
+            <!-- Sample Gates - Inactive -->
+            <g>
+                <!-- Gate 1 - Inactive -->
+                <circle cx="429" cy="573" r="12.3" fill="rgba(255,255,255,0.1)" stroke="rgba(255,255,255,0.3)" stroke-width="2" />
+                <text x="429" y="573" text-anchor="middle" dominant-baseline="central" fill="#999999" font-size="12" font-weight="500">1</text>
+            </g>
+            
+            <g>
+                <!-- Gate 2 - Inactive -->
+                <circle cx="421" cy="779" r="12.3" fill="rgba(255,255,255,0.1)" stroke="rgba(255,255,255,0.3)" stroke-width="2" />
+                <text x="421" y="779" text-anchor="middle" dominant-baseline="central" fill="#999999" font-size="12" font-weight="500">2</text>
+            </g>
+            
+            <!-- More gates would be positioned around the perimeter... -->
+        </svg>
+        
+        <!-- Personality Side (Right) -->
+        <div class="planetary-list planetary-list-right">
+            <div class="planetary-header personality">Personality</div>
+            <div class="planetary-item">
+                <span class="gate-number">26.5</span>
+                <span class="planet-symbol">☉</span>
+            </div>
+            <div class="planetary-item">
+                <span class="gate-number">45.5</span>
+                <span class="planet-symbol">♁</span>
+            </div>
+            <div class="planetary-item">
+                <span class="gate-number">6.2</span>
+                <span class="planet-symbol">☽</span>
+            </div>
+            <div class="planetary-item">
+                <span class="gate-number">17.3</span>
+                <span class="planet-symbol">☊</span>
+            </div>
+            <div class="planetary-item">
+                <span class="gate-number">18.3</span>
+                <span class="planet-symbol">☋</span>
+            </div>
+            <div class="planetary-item">
+                <span class="gate-number">11.3</span>
+                <span class="planet-symbol">☿</span>
+            </div>
+            <div class="planetary-item">
+                <span class="gate-number">41.3</span>
+                <span class="planet-symbol">♀</span>
+            </div>
+            <div class="planetary-item">
+                <span class="gate-number">57.6</span>
+                <span class="planet-symbol">♂</span>
+            </div>
+            <div class="planetary-item">
+                <span class="gate-number">46.6</span>
+                <span class="planet-symbol">♃</span>
+            </div>
+            <div class="planetary-item">
+                <span class="gate-number">51.4</span>
+                <span class="planet-symbol">♄</span>
+            </div>
+            <div class="planetary-item">
+                <span class="gate-number">46.6</span>
+                <span class="planet-symbol">♅</span>
+            </div>
+            <div class="planetary-item">
+                <span class="gate-number">14.3</span>
+                <span class="planet-symbol">♆</span>
+            </div>
+            <div class="planetary-item">
+                <span class="gate-number">6.3</span>
+                <span class="planet-symbol">♇</span>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

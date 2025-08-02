@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Professional BodyGraph Demo</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+            color: #ffffff;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            gap: 40px;
+            align-items: flex-start;
+        }
+        
+        .bodygraph-container {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            position: relative;
+        }
+        
+        .info-panel {
+            width: 300px;
+            background: linear-gradient(135deg, #2a2a2a 0%, #3a3a3a 100%);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+        
+        .info-section {
+            margin-bottom: 24px;
+        }
+        
+        .info-section h3 {
+            margin: 0 0 12px 0;
+            color: #4ecdc4;
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .info-item:last-child {
+            border-bottom: none;
+        }
+        
+        .label {
+            color: #cccccc;
+        }
+        
+        .value {
+            color: #ffffff;
+            font-weight: 500;
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 40px;
+            background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: 2.5em;
+            font-weight: 700;
+        }
+        
+        .subject-selector {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .subject-button {
+            background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%);
+            border: none;
+            color: white;
+            padding: 12px 24px;
+            margin: 0 8px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .subject-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(78, 205, 196, 0.3);
+        }
+        
+        .subject-button.active {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 60px;
+            color: #888;
+            font-size: 18px;
+        }
+        
+        .error {
+            text-align: center;
+            padding: 60px;
+            color: #ff6b6b;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="bodygraph-container">
+            <h1>Professional BodyGraph Visualization</h1>
+            
+            <div class="subject-selector">
+                <button class="subject-button active" onclick="loadSubject('dave')">Dave</button>
+                <button class="subject-button" onclick="loadSubject('ben')">Ben</button>
+                <button class="subject-button" onclick="loadSubject('elodi')">Elodi</button>
+            </div>
+            
+            <div id="bodygraph-display">
+                <div class="loading">Loading BodyGraph...</div>
+            </div>
+        </div>
+        
+        <div class="info-panel">
+            <div class="info-section">
+                <h3>Chart Properties</h3>
+                <div class="info-item">
+                    <span class="label">Energy Type:</span>
+                    <span class="value" id="energy-type">-</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">Profile:</span>
+                    <span class="value" id="profile">-</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">Authority:</span>
+                    <span class="value" id="authority">-</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">Definition:</span>
+                    <span class="value" id="definition">-</span>
+                </div>
+            </div>
+            
+            <div class="info-section">
+                <h3>Defined Centers</h3>
+                <div id="defined-centers">
+                    <div class="loading">Loading...</div>
+                </div>
+            </div>
+            
+            <div class="info-section">
+                <h3>Active Channels</h3>
+                <div id="active-channels">
+                    <div class="loading">Loading...</div>
+                </div>
+            </div>
+            
+            <div class="info-section">
+                <h3>Birth Details</h3>
+                <div class="info-item">
+                    <span class="label">Date:</span>
+                    <span class="value" id="birth-date">-</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">Time:</span>
+                    <span class="value" id="birth-time">-</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">Location:</span>
+                    <span class="value" id="birth-location">-</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { ChartCalculator } from '../dist/calculators/chart-calculator.js';
+        import BodyGraph from '../dist/components/bodygraph/BodyGraph.js';
+        import React from 'https://esm.sh/react@18';
+        import ReactDOM from 'https://esm.sh/react-dom@18';
+
+        // Test subjects
+        const subjects = {
+            dave: {
+                name: "Dave",
+                birthDate: "1969-12-12",
+                birthTime: "22:12",
+                location: "Fresno, CA, USA",
+                timezone: "America/Los_Angeles"
+            },
+            ben: {
+                name: "Ben", 
+                birthDate: "1986-11-17",
+                birthTime: "10:19",
+                location: "Haxtun, CO, USA",
+                timezone: "America/Denver"
+            },
+            elodi: {
+                name: "Elodi",
+                birthDate: "2016-07-10", 
+                birthTime: "11:00",
+                location: "Wheat Ridge, CO, USA",
+                timezone: "America/Denver"
+            }
+        };
+
+        let currentChart = null;
+
+        async function loadSubject(subjectKey) {
+            try {
+                // Update button states
+                document.querySelectorAll('.subject-button').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                event.target.classList.add('active');
+
+                // Show loading state
+                document.getElementById('bodygraph-display').innerHTML = '<div class="loading">Loading BodyGraph...</div>';
+                updateInfoPanel(null);
+
+                const subject = subjects[subjectKey];
+                
+                // Calculate chart (this would use your existing chart calculator)
+                const calculator = new ChartCalculator();
+                const chart = await calculator.calculateChart({
+                    birthDate: subject.birthDate,
+                    birthTime: subject.birthTime,
+                    timezone: subject.timezone,
+                    latitude: 40.4406, // Approximate for demo
+                    longitude: -104.9942 // Approximate for demo
+                });
+
+                currentChart = chart;
+
+                // Render BodyGraph component
+                const bodyGraphElement = React.createElement(BodyGraph, {
+                    chart: chart,
+                    width: 851,
+                    height: 1309,
+                    interactive: true,
+                    showTooltips: true,
+                    theme: 'dark'
+                });
+
+                ReactDOM.render(bodyGraphElement, document.getElementById('bodygraph-display'));
+                
+                // Update info panel
+                updateInfoPanel(chart, subject);
+
+            } catch (error) {
+                console.error('Error loading subject:', error);
+                document.getElementById('bodygraph-display').innerHTML = 
+                    `<div class="error">Error loading BodyGraph: ${error.message}</div>`;
+            }
+        }
+
+        function updateInfoPanel(chart, subject) {
+            if (!chart) {
+                document.getElementById('energy-type').textContent = '-';
+                document.getElementById('profile').textContent = '-';
+                document.getElementById('authority').textContent = '-';
+                document.getElementById('definition').textContent = '-';
+                document.getElementById('defined-centers').innerHTML = '<div class="loading">Loading...</div>';
+                document.getElementById('active-channels').innerHTML = '<div class="loading">Loading...</div>';
+                document.getElementById('birth-date').textContent = '-';
+                document.getElementById('birth-time').textContent = '-';
+                document.getElementById('birth-location').textContent = '-';
+                return;
+            }
+
+            // Update chart properties
+            document.getElementById('energy-type').textContent = chart.energyType || '-';
+            document.getElementById('profile').textContent = chart.profile ? `${chart.profile.line1}/${chart.profile.line2}` : '-';
+            document.getElementById('authority').textContent = chart.authority || '-';
+            document.getElementById('definition').textContent = chart.definitionType || '-';
+
+            // Update defined centers
+            const definedCentersDiv = document.getElementById('defined-centers');
+            if (chart.definedCenters && chart.definedCenters.size > 0) {
+                definedCentersDiv.innerHTML = Array.from(chart.definedCenters)
+                    .map(center => `<div class="info-item"><span class="value">${center}</span></div>`)
+                    .join('');
+            } else {
+                definedCentersDiv.innerHTML = '<div class="info-item"><span class="value">None</span></div>';
+            }
+
+            // Update active channels
+            const activeChannelsDiv = document.getElementById('active-channels');
+            if (chart.activeChannels && chart.activeChannels.length > 0) {
+                activeChannelsDiv.innerHTML = chart.activeChannels
+                    .map(channel => `<div class="info-item"><span class="value">${channel.name || channel.id}</span></div>`)
+                    .join('');
+            } else {
+                activeChannelsDiv.innerHTML = '<div class="info-item"><span class="value">None</span></div>';
+            }
+
+            // Update birth details
+            if (subject) {
+                document.getElementById('birth-date').textContent = subject.birthDate;
+                document.getElementById('birth-time').textContent = subject.birthTime;
+                document.getElementById('birth-location').textContent = subject.location;
+            }
+        }
+
+        // Make loadSubject available globally
+        window.loadSubject = loadSubject;
+
+        // Load Dave by default
+        loadSubject('dave');
+    </script>
+</body>
+</html>
